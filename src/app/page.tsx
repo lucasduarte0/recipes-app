@@ -1,10 +1,15 @@
-import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import RecipesCards from "@/components/RecipesCards";
+import Search from "@/components/Search";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
+    <div className="items-center justify-items-center min-h-screen font-[family-name:var(--font-geist-sans)]">
+      <main className="container w-full grid place-items-start gap-5 py-8 sm:py-12">
+        <Navbar />
+        <Search />
+        <RecipesCards />
+        {/* <Image
           className="dark:invert"
           src="/next.svg"
           alt="Next.js logo"
@@ -47,9 +52,9 @@ export default function Home() {
           >
             Read our docs
           </a>
-        </div>
+        </div> */}
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
+      {/* <footer className="">
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
@@ -95,7 +100,7 @@ export default function Home() {
           />
           Go to nextjs.org →
         </a>
-      </footer>
+      </footer> */}
     </div>
   );
 }
