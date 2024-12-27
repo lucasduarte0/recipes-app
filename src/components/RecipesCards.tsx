@@ -1,24 +1,37 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { getRecipesWithPagination } from "@/lib/fetchRecipes";
+import { getRecipesWithPagination, searchRecipes } from "@/lib/fetchRecipes";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Timer, ChefHat } from "lucide-react";
-import { Badge } from "./ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 
 const ITEMS_PER_PAGE = 8;
 
-export default function RecipesCards() {
+interface RecipesCardsProps {
+  searchTerm: string;
+}
+
+export default function RecipesCards({ searchTerm }: RecipesCardsProps) {
   const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ["recipes"],
+      queryKey: ["recipes", searchTerm],
       queryFn: async ({ pageParam = 0 }) => {
+        if (searchTerm.trim()) {
+          const recipes = await searchRecipes(searchTerm);
+          return {
+            recipes,
+            skip: 0,
+            limit: recipes.length,
+            total: recipes.length,
+          };
+        }
         return getRecipesWithPagination(
           ["name", "image", "rating", "difficulty", "prepTimeMinutes"],
           ITEMS_PER_PAGE,
@@ -26,6 +39,9 @@ export default function RecipesCards() {
         );
       },
       getNextPageParam: (lastPage) => {
+        // Don't paginate search results
+        if (searchTerm.trim()) return undefined;
+        
         const nextSkip = lastPage.skip + lastPage.limit;
         return nextSkip < lastPage.total ? nextSkip : undefined;
       },
@@ -74,9 +90,7 @@ export default function RecipesCards() {
                     variant="outline"
                   >
                     <Timer className="w-4 h-4 text-red-500" />
-                    <span className="">{`${
-                      recipe.prepTimeMinutes || 0
-                    } min`}</span>
+                    <span className="">{`${recipe.prepTimeMinutes || 0} min`}</span>
                   </Badge>
                 </div>
 
@@ -93,9 +107,7 @@ export default function RecipesCards() {
                 </CardContent>
               </Card>
             </Link>
-            <h2 className="text-xl font-playful font-semibold">
-              {recipe.name}
-            </h2>
+            <h2 className="text-xl font-playful font-semibold">{recipe.name}</h2>
           </div>
         ))
       )}

@@ -1,7 +1,12 @@
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon } from "lucide-react";
 
-export default function Search() {
+interface SearchProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export default function Search({ value, onChange }: SearchProps) {
   return (
     <div className="flex items-center justify-center w-full">
       <div className="relative w-full">
@@ -9,7 +14,9 @@ export default function Search() {
         <Input
           type="text"
           placeholder="Search recipes"
-          className=" bg-gray-100 rounded-xl border-none pl-10 pr-4 py-6"
+          className="bg-gray-100 rounded-xl border-none pl-10 pr-4 py-6"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
       </div>
     </div>
