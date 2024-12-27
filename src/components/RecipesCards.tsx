@@ -15,13 +15,13 @@ export default async function RecipesCards() {
   ]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full ">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 w-full">
       {recipes.recipes.map((recipe, index) => (
         <div key={index} className="space-y-1.5 w-full">
           <Link href={`/recipe/${recipe.id}`} passHref>
             <Card
               key={index}
-              className="w-full p-0 overflow-hidden rounded-lg border shadow-sm hover:shadow-lg transition-shadow duration-200"
+              className="w-full p-0 overflow-hidden rounded-2xl border shadow-sm hover:shadow-lg transition-shadow duration-200"
             >
               {/* Recipe Header */}
               <div className="absolute flex items-center gap-2 px-3 py-2 bg-opacity-90 rounded-md z-10">
@@ -51,16 +51,17 @@ export default async function RecipesCards() {
               {/* Recipe Image */}
               <CardContent className="p-0">
                 <Image
-                  className="object-cover w-full h-56"
+                  className="object-cover w-full h-64 sm:h-56"
                   src={recipe.image}
                   width={350}
                   height={350}
                   alt={recipe.name || "Recipe Image"}
+                  priority={index === 0}
                 />
               </CardContent>
             </Card>
           </Link>
-          <h2 className="text-lg font-semibold">{recipe.name}</h2>
+          <h2 className="text-xl font-playful font-semibold">{recipe.name}</h2>
         </div>
       ))}
     </div>
