@@ -8,14 +8,15 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
 type Props = {
-  params: { recipeId: string };
+  params: Promise<{ recipeId: string }>;
 };
 
 export default async function Page({ params }: Props) {
-  const { recipeId } = params;
+  const { recipeId } = await params;
   const recipe = await getRecipeById(parseInt(recipeId));
 
-  const totalTime = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
+  const totalTime =
+    (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
   return (
     <div className="relative max-w-4xl mx-auto min-h-screen">
@@ -46,17 +47,19 @@ export default async function Page({ params }: Props) {
             <div className="w-full flex justify-evenly items-center gap-6">
               <div className="flex flex-col items-center gap-1">
                 <ChefHat className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">{recipe.difficulty || 'Easy'}</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <Clock className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 <span className="text-sm font-[400]">
-                  {totalTime} min
+                  {recipe.difficulty || "Easy"}
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
+                <Clock className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                <span className="text-sm font-[400]">{totalTime} min</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
                 <Star className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">{recipe.rating || '4.5'}</span>
+                <span className="text-sm font-[400]">
+                  {recipe.rating || "4.5"}
+                </span>
               </div>
             </div>
           </div>
