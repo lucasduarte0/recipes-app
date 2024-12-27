@@ -11,7 +11,7 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <div className="space-y-1.5 w-full">
-      <Link href={`/recipe/${recipe.id}`} passHref>
+      <Link href={`/recipes/${recipe.id}`} passHref>
         <Card className="w-full p-0 overflow-hidden rounded-2xl border shadow-sm hover:shadow-lg transition-shadow duration-200">
           <RecipeBadges
             rating={recipe.rating ?? 5}
