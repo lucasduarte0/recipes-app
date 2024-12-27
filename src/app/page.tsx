@@ -2,7 +2,7 @@
 
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import RecipesCards from "@/components/RecipesCards";
+import RecipesCards from "@/components/recipe-card/RecipesCards";
 import Search from "@/components/Search";
 import { useState } from "react";
 
