@@ -1,5 +1,8 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SearchProps {
   value: string;
@@ -7,6 +10,16 @@ interface SearchProps {
 }
 
 export default function Search({ value, onChange }: SearchProps) {
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onChange(localValue);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [localValue, onChange]);
+
   return (
     <div className="flex items-center justify-center w-full">
       <div className="relative w-full">
@@ -15,8 +28,8 @@ export default function Search({ value, onChange }: SearchProps) {
           type="text"
           placeholder="Search recipes"
           className="bg-gray-100 rounded-xl border-none pl-10 pr-4 py-6"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
         />
       </div>
     </div>
