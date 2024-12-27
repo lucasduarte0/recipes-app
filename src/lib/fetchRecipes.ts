@@ -20,7 +20,8 @@ export async function getAllRecipes(
   skip: number = 0
 ): Promise<Recipe[]> {
   const endpoint = `?limit=${limit}&skip=${skip}`;
-  return fetchAPI(endpoint);
+  const data = await fetchAPI(endpoint);
+  return data.recipes;
 }
 
 export async function getRecipeById(id: number): Promise<Recipe> {
@@ -30,7 +31,8 @@ export async function getRecipeById(id: number): Promise<Recipe> {
 
 export async function searchRecipes(query: string): Promise<Recipe[]> {
   const endpoint = `/search?q=${encodeURIComponent(query)}`;
-  return fetchAPI(endpoint);
+  const data = await fetchAPI(endpoint);
+  return data.recipes;
 }
 
 export async function getRecipesWithPagination(
@@ -52,7 +54,8 @@ export async function sortRecipes(
   const endpoint = `?sortBy=${encodeURIComponent(
     sortBy
   )}&order=${encodeURIComponent(order)}`;
-  return fetchAPI(endpoint);
+  const data = await fetchAPI(endpoint);
+  return data.recipes;
 }
 
 export async function getAllRecipeTags(): Promise<string[]> {
@@ -62,10 +65,12 @@ export async function getAllRecipeTags(): Promise<string[]> {
 
 export async function getRecipesByTag(tag: string): Promise<Recipe[]> {
   const endpoint = `/tag/${encodeURIComponent(tag)}`;
-  return fetchAPI(endpoint);
+  const data = await fetchAPI(endpoint);
+  return data.recipes;
 }
 
 export async function getRecipesByMeal(mealType: string): Promise<Recipe[]> {
   const endpoint = `/meal-type/${encodeURIComponent(mealType)}`;
-  return fetchAPI(endpoint);
+  const data = await fetchAPI(endpoint);
+  return data.recipes;
 }

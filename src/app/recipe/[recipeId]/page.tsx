@@ -1,8 +1,7 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getRecipeById } from "@/lib/fetchRecipes";
-import { Clock, Star, BookmarkPlus, ChefHat, StepBack, ChevronLeft } from "lucide-react";
+import { Clock, Star, ChefHat, ChevronLeft } from "lucide-react";
 import NumericSelector from "@/components/NumericSelector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
@@ -13,10 +12,10 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const { recipeId } = await params;
+  const { recipeId } = params;
   const recipe = await getRecipeById(parseInt(recipeId));
 
-  console.log(recipe);
+  const totalTime = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
   return (
     <div className="relative max-w-4xl mx-auto min-h-screen">
@@ -47,36 +46,33 @@ export default async function Page({ params }: Props) {
             <div className="w-full flex justify-evenly items-center gap-6">
               <div className="flex flex-col items-center gap-1">
                 <ChefHat className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">{recipe.difficulty}</span>
+                <span className="text-sm font-[400]">{recipe.difficulty || 'Easy'}</span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Clock className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 <span className="text-sm font-[400]">
-                  {recipe.prepTimeMinutes + recipe.cookTimeMinutes} min
+                  {totalTime} min
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Star className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">{recipe.rating}</span>
+                <span className="text-sm font-[400]">{recipe.rating || '4.5'}</span>
               </div>
             </div>
           </div>
 
-          {/* <Button variant="outline" className="gap-2">
-            <BookmarkPlus className="w-5 h-5" />
-            Save Recipe
-          </Button> */}
-
           <h1 className="text-4xl font-playful font-bold mb-4">
             {recipe.name}
           </h1>
-          <div className="flex flex-wrap gap-2 mb-8">
-            {recipe.tags.map((tag: string) => (
-              <Badge key={tag} variant="secondary">
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          {recipe.tags && recipe.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {recipe.tags.map((tag: string) => (
+                <Badge key={tag} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           <div className="space-y-5">
             {/* Ingredients Qty */}
@@ -91,45 +87,48 @@ export default async function Page({ params }: Props) {
                 <NumericSelector
                   min={0}
                   max={10}
-                  defaultValue={3}
-                  // onChange={(value) => console.log("New value:", value)}
+                  defaultValue={recipe.servings || 4}
                 />
               </div>
             </div>
 
             {/* Ingredients List */}
-            <ul className="space-y-5">
-              {recipe.ingredients.map((ingredient: string, index: number) => (
-                <li key={index} className="flex items-center gap-2">
-                  <Checkbox id="terms1" />
-                  <label
-                    htmlFor="terms2"
-                    className=" leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {ingredient}
-                  </label>
-                </li>
-              ))}
-            </ul>
+            {recipe.ingredients && recipe.ingredients.length > 0 && (
+              <ul className="space-y-5">
+                {recipe.ingredients.map((ingredient: string, index: number) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <Checkbox id={`ingredient-${index}`} />
+                    <label
+                      htmlFor={`ingredient-${index}`}
+                      className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {ingredient}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <Separator />
 
             {/* Instructions */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Instructions</h2>
-              <ol className="space-y-4">
-                {recipe.instructions.map(
-                  (instruction: string, index: number) => (
-                    <li key={index} className="flex gap-4">
-                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-medium">
-                        {index + 1}
-                      </span>
-                      <p className="">{instruction}</p>
-                    </li>
-                  )
-                )}
-              </ol>
-            </div>
+            {recipe.instructions && recipe.instructions.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-semibold mb-4">Instructions</h2>
+                <ol className="space-y-4">
+                  {recipe.instructions.map(
+                    (instruction: string, index: number) => (
+                      <li key={index} className="flex gap-4">
+                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-medium">
+                          {index + 1}
+                        </span>
+                        <p className="">{instruction}</p>
+                      </li>
+                    )
+                  )}
+                </ol>
+              </div>
+            )}
           </div>
         </div>
       </div>
