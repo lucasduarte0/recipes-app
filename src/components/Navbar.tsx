@@ -1,9 +1,10 @@
 // import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-"use client";
+
 import { SignedIn, UserButton, SignedOut, SignInButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 // import { currentUser } from "@clerk/nextjs/server";
 
-export default function Navbar() {
+export default async function Navbar() {
   return (
     <div>
       <SignedIn>
@@ -16,8 +17,8 @@ export default function Navbar() {
   );
 }
 
-function NavbarSignedIn() {
-  // const user = await currentUser();
+async function NavbarSignedIn() {
+  const user = await currentUser();
 
   return (
     <div className="flex w-full gap-3">
@@ -29,9 +30,9 @@ function NavbarSignedIn() {
         }}
       />
       <div className="flex-1 flex flex-col">
-        <h1 className="text-xl font-bold">Hello, World!</h1>
+        <h1 className="text-2xl font-playful font-bold">Hello, {user?.firstName}</h1>
         <p className="text-sm text-muted-foreground">
-          Welcome to Next.js with Tailwind CSS
+          Welcome to the Recipe App!
         </p>
       </div>
     </div>
