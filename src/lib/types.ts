@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 export interface Recipe {
   id: number;
   name: string;
@@ -22,4 +24,16 @@ export interface RecipeWithPagination {
   total: number;
   skip: number;
   limit: number;
+}
+
+export interface Category {
+  name: string;
+  image: string;
+  description: string;
+  count: number;
+}
+
+export interface Filter {
+  icon: LucideIcon;
+  label: string;
 }
