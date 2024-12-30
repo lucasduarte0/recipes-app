@@ -1,8 +1,10 @@
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { Cuisine } from '@prisma/client';
+import { supabaseLoader } from '@/lib/utils';
 
-export function CategoriesGrid({ categoryList }: { categoryList: string[] }) {
+export function CategoriesGrid({ cuisines }: { cuisines: Cuisine[] }) {
   const router = useRouter();
 
   const handleCategoryClick = (category: string) => {
@@ -11,16 +13,24 @@ export function CategoriesGrid({ categoryList }: { categoryList: string[] }) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {categoryList.map((category: string) => (
+      {cuisines.map((cuisine: Cuisine) => (
         <Card
-          key={category}
+          key={cuisine.id}
           className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => handleCategoryClick(category)}
+          // onClick={() => handleCategoryClick(category)}
         >
           <div className="aspect-video relative">
             <Image
-              src="https://picsum.photos/200/300"
-              alt={category}
+              src={
+                cuisine.image
+                  ? supabaseLoader({
+                      url: cuisine.image,
+                      width: 200,
+                      quality: 75,
+                    })
+                  : 'https://via.placeholder.com/200'
+              }
+              alt={cuisine.description ?? ''}
               height={200}
               width={200}
               className="object-cover w-full h-full"
@@ -29,9 +39,9 @@ export function CategoriesGrid({ categoryList }: { categoryList: string[] }) {
           <CardContent className="p-4">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold">{category}</h3>
+                <h3 className="font-semibold">{cuisine.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {category} recipes
+                  {cuisine.name} recipes
                 </p>
               </div>
             </div>

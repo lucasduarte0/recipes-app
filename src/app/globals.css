@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: "Inter", Helvetica, sans-serif;
+  font-family: 'Inter', Helvetica, sans-serif;
 }
 
 @layer base {
@@ -73,6 +73,6 @@ body {
 }
 
 .container {
-  @apply w-full mx-auto px-6;
+  @apply w-full mx-auto px-4;
   max-width: 1280px;
 }

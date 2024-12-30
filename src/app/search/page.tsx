@@ -1,8 +1,8 @@
 import SearchPageClient from "./SearchPageClient";
-import { getAllRecipeTags } from "@/lib/fetchRecipes";
+import { getCuisisnes } from "@/lib/recipes";
 
 export default async function SearchPage() {
-  const categoryList = await getAllRecipeTags();
+  const cuisines = await getCuisisnes();
 
-  return <SearchPageClient categoryList={categoryList} />;
+  return <SearchPageClient cuisines={cuisines} />;
 }

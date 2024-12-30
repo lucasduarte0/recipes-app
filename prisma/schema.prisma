@@ -1,17 +1,13 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions")]
 }
 
 model User {
@@ -21,9 +17,9 @@ model User {
   email     String   @unique
   imageUrl  String   @map("image_url")
   username  String   @unique
-  recipes   Recipe[]
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  recipes   Recipe[]
 
   @@map("users")
 }
@@ -37,20 +33,29 @@ model Recipe {
   cookTimeMinutes    Int?       @map("cook_time_minutes")
   servings           Int?
   difficulty         String?
-  cuisine            String?
+  cuisine            String
   caloriesPerServing Int?       @map("calories_per_serving")
   tags               String[]   @default([])
   image              String
   rating             Float?
   reviewCount        Int?       @map("review_count")
   mealType           String[]   @map("meal_type")
-  categories         Category[]
-  userId             String     @map("user_id")
-  user               User       @relation(fields: [userId], references: [id])
   createdAt          DateTime   @default(now()) @map("created_at")
-  updatedAt          DateTime   @updatedAt @map("updated_at")
+  updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at")
+  categories         Category[] @relation("CategoryToRecipe")
+  userId             String     @map("user_id")
+  user               User       @relation(fields: [userId], references: [id]) // Changed from User to user for consistency
 
   @@map("recipes")
+}
+
+model Cuisine {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  image       String?
+
+  @@map("cuisines")
 }
 
 model Category {
@@ -58,7 +63,7 @@ model Category {
   image       String
   description String
   count       Int      @default(0)
-  recipes     Recipe[]
+  recipes     Recipe[] @relation("CategoryToRecipe")
 
   @@map("categories")
 }

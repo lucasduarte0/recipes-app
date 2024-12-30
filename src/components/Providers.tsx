@@ -1,15 +1,18 @@
-"use client";
+'use client';
 
-import { ClerkProvider } from "@clerk/nextjs";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { ClerkProvider } from '@clerk/nextjs';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
     <ClerkProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <NuqsAdapter>{children}</NuqsAdapter>
+      </QueryClientProvider>
     </ClerkProvider>
   );
 }

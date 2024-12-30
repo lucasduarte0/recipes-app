@@ -1,28 +1,27 @@
-"use client";
+'use client';
 
-import { CategoriesGrid } from "@/components/CategoriesGrid";
-import RecipesCards from "@/components/recipe-card/RecipesCards";
-import Search from "@/components/Search";
-import { Button } from "@/components/ui/button";
+import { CategoriesGrid } from '@/components/CategoriesGrid';
+import RecipesCards from '@/components/recipe-card/RecipesCards';
+import Search from '@/components/Search';
+import { Button } from '@/components/ui/button';
+import { Cuisine } from '@prisma/client';
 
-import { Clock, ChefHat, Flame } from "lucide-react";
-import { useState } from "react";
+import { Clock, ChefHat, Flame } from 'lucide-react';
+import { useState } from 'react';
 
 const filters = [
-  { icon: Clock, label: "Quick (< 30 min)" },
-  { icon: ChefHat, label: "Easy" },
-  { icon: Flame, label: "Popular" },
+  { icon: Clock, label: 'Quick (< 30 min)' },
+  { icon: ChefHat, label: 'Easy' },
+  { icon: Flame, label: 'Popular' },
 ];
 
 interface SearchPageClientProps {
-  categoryList: string[];
+  cuisines: Cuisine[];
 }
 
-export default function SearchPageClient({
-  categoryList,
-}: SearchPageClientProps) {
+export default function SearchPageClient({ cuisines }: SearchPageClientProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const toggleFilter = (filter: string) => {
     setActiveFilters((current) =>
@@ -32,7 +31,7 @@ export default function SearchPageClient({
     );
   };
   return (
-    <div className="container mx-auto px-8 py-6 space-y-6">
+    <div className="container mx-auto pb-20 pt-4 space-y-6">
       {/* Search Input */}
       <Search value={searchQuery} onChange={setSearchQuery} />
 
@@ -41,10 +40,9 @@ export default function SearchPageClient({
         {filters.map(({ icon: Icon, label }) => (
           <Button
             key={label}
-            variant={activeFilters.includes(label) ? "default" : "outline"}
+            variant={activeFilters.includes(label) ? 'default' : 'outline'}
             className="gap-2"
-            onClick={() => toggleFilter(label)}
-          >
+            onClick={() => toggleFilter(label)}>
             <Icon className="h-4 w-4" />
             {label}
           </Button>
@@ -55,7 +53,7 @@ export default function SearchPageClient({
       {searchQuery.length > 0 ? (
         <RecipesCards searchTerm={searchQuery} />
       ) : (
-        <CategoriesGrid categoryList={categoryList} />
+        <CategoriesGrid cuisines={cuisines} />
       )}
     </div>
   );

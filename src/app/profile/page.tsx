@@ -1,22 +1,21 @@
-import { Avatar } from '@/components/ui/avatar';
+import { RecipeCard } from '@/components/recipe-card/RecipeCard';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import prisma from '@/lib/db';
 import { auth } from '@clerk/nextjs/server';
 import { Plus } from 'lucide-react';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 export default async function ProfilePage() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     return null;
   }
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { recipes: true }
+    include: { recipes: true },
   });
 
   if (!user) {
@@ -30,21 +29,15 @@ export default async function ProfilePage() {
         <div className="relative">
           <Avatar className="w-24 h-24">
             <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-2xl">
-              {user.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img 
-                  src={user.imageUrl} 
-                  alt={user.username} 
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : (
-                '👨‍🍳'
-              )}
+              <AvatarImage src={user.imageUrl} />
+              <AvatarFallback>CN</AvatarFallback>
             </div>
           </Avatar>
-          <button className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md">
-            <Plus size={16} />
-          </button>
+          {!user.imageUrl && (
+            <button className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md">
+              <Plus size={16} />
+            </button>
+          )}
         </div>
 
         <h1 className="text-2xl font-bold mt-4">{`${user.firstName} ${user.lastName}`}</h1>
@@ -90,9 +83,14 @@ export default async function ProfilePage() {
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {user.recipes.map((recipe) => (
-              <div key={recipe.id} className="aspect-square bg-gray-100 rounded-lg">
-                {/* Recipe preview card */}
-              </div>
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                imageAspectRatio="square">
+                <h2 className="text-base font-playful font-semibold">
+                  {recipe.name}
+                </h2>
+              </RecipeCard>
             ))}
           </div>
         )}
