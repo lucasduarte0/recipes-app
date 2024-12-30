@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import prisma from '@/lib/db';
 import { auth } from '@clerk/nextjs/server';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function ProfilePage() {
   const { userId } = await auth();
@@ -43,8 +44,8 @@ export default async function ProfilePage() {
         <h1 className="text-2xl font-bold mt-4">{`${user.firstName} ${user.lastName}`}</h1>
         <p className="text-gray-500">@{user.username}</p>
 
-        <Button variant="outline" className="mt-4 rounded-full px-8">
-          Edit Profile
+        <Button variant="outline" className="mt-4 rounded-full px-8" asChild>
+          <Link href="/profile/edit">Edit Profile</Link>
         </Button>
 
         <p className="text-primary mt-4">
@@ -83,14 +84,22 @@ export default async function ProfilePage() {
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {user.recipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                imageAspectRatio="square">
-                <h2 className="text-base font-playful font-semibold">
-                  {recipe.name}
-                </h2>
-              </RecipeCard>
+              <div key={recipe.id} className="relative">
+                <RecipeCard recipe={recipe} imageAspectRatio="square">
+                  <h2 className="text-base font-playful font-semibold">
+                    {recipe.name}
+                  </h2>
+                </RecipeCard>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute top-2 right-2 rounded-full shadow-md text-foreground bg-background hover:bg-primary/80"
+                  asChild>
+                  <Link href={`/recipes/edit/${recipe.id}`}>
+                    <Pencil className="h-3 w-3 " />
+                  </Link>
+                </Button>
+              </div>
             ))}
           </div>
         )}

@@ -47,8 +47,45 @@ export async function getAllRecipes() {
   return await prisma.recipe.findMany();
 }
 
-export async function getCuisisnes(): Promise<Cuisine[]> {
+export async function getCuisines(): Promise<Cuisine[]> {
   const cuisines = await prisma.cuisine.findMany();
 
   return cuisines;
+}
+
+export async function getRecipeById(id: number) {
+  return await prisma.recipe.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          imageUrl: true,
+        },
+      },
+      categories: true,
+    },
+  });
+}
+
+export async function updateRecipe(
+  id: number,
+  userId: string,
+  data: Prisma.RecipeUpdateInput
+) {
+  // Verify ownership
+  const recipe = await prisma.recipe.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
+
+  if (!recipe || recipe.userId !== userId) {
+    throw new Error('Unauthorized');
+  }
+
+  return await prisma.recipe.update({
+    where: { id },
+    data,
+  });
 }
