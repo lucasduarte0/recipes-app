@@ -3,7 +3,7 @@ import RecipesCards from '@/components/recipe-card/RecipesCards';
 import Search from '@/components/Search';
 import { useQueryState, parseAsString } from 'nuqs';
 
-export function RecipesGrid() {
+export function RecipesGrid({ query }: any) {
   const [searchTerm, setSearchTerm] = useQueryState(
     'search',
     parseAsString.withDefault('')

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { updateRecipe } from '@/lib/recipes';
 import { RecipeFormValues, recipeFormSchema } from './schema';
 import { Button } from '@/components/ui/button';
+// import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Form,
   FormControl,
@@ -66,8 +67,8 @@ export function EditRecipeForm({
       cuisine: recipe.cuisine ?? 'American',
       caloriesPerServing: recipe.caloriesPerServing || 0,
       tags: recipe.tags,
-      image: recipe.image,
       mealType: recipe.mealType,
+      // image: recipe.image,
     },
   });
 
@@ -83,11 +84,6 @@ export function EditRecipeForm({
       setIsLoading(false);
     }
   }
-
-  // Add log when form changes
-  form.watch((value, { type }) => {
-    console.log('Form changed:', value, type);
-  });
 
   return (
     <Form {...form}>
@@ -277,19 +273,17 @@ export function EditRecipeForm({
           )}
         />
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="image"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image URL</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            <ImageUpload
+              value={field.value}
+              onChange={field.onChange}
+              label="Recipe Image"
+            />
           )}
-        />
+        /> */}
 
         <div className="flex justify-end gap-4">
           <Button

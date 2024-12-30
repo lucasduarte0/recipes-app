@@ -10,6 +10,7 @@ interface EditRecipePageProps {
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { recipeId } = await params;
   const { userId } = await auth();
+
   if (!userId) {
     redirect('/sign-in');
   }
@@ -17,12 +18,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const recipe = await getRecipeById(parseInt(recipeId));
   const cuisines = await getCuisines();
 
-  if (!recipe) {
-    redirect('/recipes');
-  }
-
-  // Check if the user owns this recipe
-  if (recipe.userId !== userId) {
+  if (!recipe || recipe.userId !== userId) {
     redirect('/recipes');
   }
 

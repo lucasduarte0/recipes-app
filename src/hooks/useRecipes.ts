@@ -5,12 +5,14 @@ import { searchRecipes } from '@/lib/recipes';
 
 interface UseRecipesOptions {
   searchTerm?: string;
+  where?: any;
   itemsPerPage?: number;
   staleTime?: number;
 }
 
 export function useRecipes({
   searchTerm = '',
+  where = {},
   itemsPerPage = 8,
   staleTime = 1000 * 60, // 1 minute default
 }: UseRecipesOptions = {}) {
@@ -30,7 +32,7 @@ export function useRecipes({
     queryFn: async ({ pageParam }) => {
       const skip = typeof pageParam === 'number' ? pageParam : 0;
       const { recipes, total, take } = await searchRecipes(
-        searchTerm,
+        { searchTerm, where },
         skip,
         itemsPerPage
       );

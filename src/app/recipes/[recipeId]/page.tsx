@@ -1,31 +1,38 @@
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { getRecipeById } from "@/lib/fetchRecipes";
-import { Clock, Star, ChefHat, ChevronLeft } from "lucide-react";
-import NumericSelector from "@/components/NumericSelector";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
+import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
+import { getRecipeById } from '@/lib/recipes';
+import { Clock, Star, ChefHat, ChevronLeft, Edit } from 'lucide-react';
+import { currentUser } from '@clerk/nextjs/server';
+import NumericSelector from '@/components/NumericSelector';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 type Props = {
   params: Promise<{ recipeId: string }>;
 };
 
 export default async function Page({ params }: Props) {
+  const user = await currentUser();
+
   const { recipeId } = await params;
   const recipe = await getRecipeById(parseInt(recipeId));
 
+  if (!recipe) {
+    return <div>Recipe not found</div>;
+  }
+
+  const isOwner = user?.id === recipe.user.id;
   const totalTime =
     (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
   return (
-    <div className="relative max-w-4xl mx-auto min-h-screen">
+    <div className="relative max-w-4xl mx-auto min-h-screen pb-20">
       <div className="relative w-full h-[45vh] sm:h-[450px]">
         <Link
           href="/"
           className="fixed z-10 top-4 left-4 p-2 bg-white/70 hover:bg-white/90 rounded-full transition-colors"
-          aria-label="Go back"
-        >
+          aria-label="Go back">
           <ChevronLeft className="w-6 h-6" />
         </Link>
         <div className="fixed sm:absolute top-0 left-0 right-0 w-full h-[50vh] sm:h-[450px]">
@@ -37,18 +44,26 @@ export default async function Page({ params }: Props) {
             priority
             quality={90}
           />
+          {isOwner && (
+            <Link
+              href={`/recipes/edit/${recipe.id}`}
+              className="absolute top-4 right-4 p-2 bg-white/70 hover:bg-white/90 rounded-full transition-colors"
+              aria-label="Edit recipe">
+              <Edit className="w-6 h-6" />
+            </Link>
+          )}
         </div>
       </div>
 
       <div className="relative z-10">
-        <div className="bg-white rounded-t-[32px] p-6 sm:p-8 shadow-lg">
+        <div className="bg-white rounded-t-[32px] p-6 sm:p-8">
           {/* Badges */}
           <div className="w-full flex items-center justify-center mb-6">
             <div className="w-full flex justify-evenly items-center gap-6">
               <div className="flex flex-col items-center gap-1">
                 <ChefHat className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 <span className="text-sm font-[400]">
-                  {recipe.difficulty || "Easy"}
+                  {recipe.difficulty || 'Easy'}
                 </span>
               </div>
               <div className="flex flex-col items-center gap-1">
@@ -58,7 +73,7 @@ export default async function Page({ params }: Props) {
               <div className="flex flex-col items-center gap-1">
                 <Star className="w-6 h-6 text-primary" strokeWidth={1.5} />
                 <span className="text-sm font-[400]">
-                  {recipe.rating || "4.5"}
+                  {recipe.rating || '4.5'}
                 </span>
               </div>
             </div>
@@ -103,8 +118,7 @@ export default async function Page({ params }: Props) {
                     <Checkbox id={`ingredient-${index}`} />
                     <label
                       htmlFor={`ingredient-${index}`}
-                      className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
+                      className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       {ingredient}
                     </label>
                   </li>
@@ -132,6 +146,69 @@ export default async function Page({ params }: Props) {
                 </ol>
               </div>
             )}
+
+            <Separator />
+
+            {/* Additional Details */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-semibold mb-4">
+                Additional Details
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {recipe.cuisine && (
+                  <div>
+                    <span className="font-medium">Cuisine:</span>
+                    <p className="text-muted-foreground">{recipe.cuisine}</p>
+                  </div>
+                )}
+                {recipe.caloriesPerServing && (
+                  <div>
+                    <span className="font-medium">Calories per serving:</span>
+                    <p className="text-muted-foreground">
+                      {recipe.caloriesPerServing}
+                    </p>
+                  </div>
+                )}
+                {recipe.reviewCount && (
+                  <div>
+                    <span className="font-medium">Reviews:</span>
+                    <p className="text-muted-foreground">
+                      {recipe.reviewCount}
+                    </p>
+                  </div>
+                )}
+                {recipe.mealType && recipe.mealType.length > 0 && (
+                  <div>
+                    <span className="font-medium">Meal Type:</span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {recipe.mealType.map((type) => (
+                        <Badge key={type} variant="secondary">
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {recipe.categories && recipe.categories.length > 0 && (
+                  <div className="col-span-2">
+                    <span className="font-medium">Categories:</span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {recipe.categories.map((category) => (
+                        <Badge key={category.name} variant="outline">
+                          {category.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="col-span-2">
+                  <span className="font-medium">Created by:</span>
+                  <p className="text-muted-foreground">
+                    {recipe.user.username}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

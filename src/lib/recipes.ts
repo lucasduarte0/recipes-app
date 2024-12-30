@@ -1,34 +1,52 @@
 'use server';
 import { Cuisine, Prisma } from '@prisma/client';
 import prisma from './db';
+import { createClerkSupabaseServer } from './supabase/server';
+import { DefaultArgs } from '@prisma/client/runtime/library';
 
-export async function searchRecipes(searchTerm: string, skip = 0, take = 10) {
-  const where: Prisma.RecipeWhereInput = searchTerm.trim()
+type RecipeFilters = {
+  searchTerm?: string;
+  where?: Prisma.RecipeWhereInput;
+};
+
+export async function searchRecipes(
+  { searchTerm = '', where = {} }: RecipeFilters,
+  skip = 0,
+  take = 10
+) {
+  // Combine search term filter with provided where clause
+  const searchFilter: Prisma.RecipeWhereInput = searchTerm.trim()
     ? {
-        name: {
-          contains: searchTerm.trim(),
-          mode: 'insensitive' as const,
-        },
+        OR: [
+          {
+            name: {
+              contains: searchTerm.trim(),
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            tags: {
+              has: searchTerm.trim(),
+            },
+          },
+        ],
       }
     : {};
 
+  // Combine all filters using AND
+  const finalWhere: Prisma.RecipeWhereInput = {
+    AND: [
+      searchFilter,
+      where, // Include the provided where clause
+    ].filter(Boolean), // Remove empty filters
+  };
+
   const select: Prisma.RecipeSelect = {
-    id: true,
-    name: true,
-    image: true,
-    rating: true,
-    difficulty: true,
-    prepTimeMinutes: true,
-    user: {
-      select: {
-        username: true,
-        imageUrl: true,
-      },
-    },
+    // ... existing code ...
   };
 
   const recipes = await prisma.recipe.findMany({
-    where,
+    where: finalWhere,
     select,
     take,
     skip,
@@ -36,11 +54,16 @@ export async function searchRecipes(searchTerm: string, skip = 0, take = 10) {
       createdAt: 'desc',
     },
   });
-  const total = await prisma.recipe.count({ where });
+  const total = await prisma.recipe.count({ where: finalWhere });
 
-  console.log(`Found ${recipes.length} recipes for "${searchTerm}"`);
+  console.log(`Found ${recipes.length} recipes matching the criteria`);
 
   return { recipes, total, take };
+}
+
+// Get Recipes
+export async function getRecipes(args: Prisma.RecipeFindManyArgs<DefaultArgs>) {
+  return await prisma.recipe.findMany(args);
 }
 
 export async function getAllRecipes() {
@@ -88,4 +111,19 @@ export async function updateRecipe(
     where: { id },
     data,
   });
+}
+
+export async function uploadImage(file: File, fileName: string) {
+  const supabase = await createClerkSupabaseServer();
+  const { data, error } = await supabase.storage
+    .from('recipes')
+    .upload(`${fileName}.png`, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Failed to upload image: ${error.message}`);
+  }
+  return data;
 }

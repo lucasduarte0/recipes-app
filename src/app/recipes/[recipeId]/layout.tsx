@@ -1,4 +1,4 @@
-import { getRecipeById } from "@/lib/fetchRecipes";
+import { getRecipeById } from "@/lib/recipes";
 import { Metadata } from "next";
 
 type Props = {
