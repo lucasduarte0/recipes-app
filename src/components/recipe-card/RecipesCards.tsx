@@ -4,14 +4,16 @@ import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { Loader2 } from 'lucide-react';
 import LoadMoreIndicator from '@/components/recipe-card/LoadMoreIndicator';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Heart } from 'lucide-react';
 import { useRecipes } from '@/hooks/useRecipes';
+import { Prisma } from '@prisma/client';
+import { LikeButton } from '../LikeButton';
 
 interface RecipesCardsProps {
   searchTerm: string;
+  where?: Prisma.RecipeWhereInput;
 }
 
-export default function RecipesCards({ searchTerm }: RecipesCardsProps) {
+export default function RecipesCards({ searchTerm, where }: RecipesCardsProps) {
   const {
     isLoading,
     isError,
@@ -23,6 +25,7 @@ export default function RecipesCards({ searchTerm }: RecipesCardsProps) {
     ref,
   } = useRecipes({
     searchTerm,
+    where,
     itemsPerPage: 8,
   });
 
@@ -55,35 +58,24 @@ export default function RecipesCards({ searchTerm }: RecipesCardsProps) {
         {data?.pages.map((page) =>
           page.recipes.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} badges={true}>
-              <div className="flex justify-between items-center w-full">
-                <div className="w-full">
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-1">
-                      <h2 className="text-base font-playful font-semibold">
-                        {recipe.name}
-                      </h2>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                          <AvatarImage src={recipe.user.imageUrl} />
-                          <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs text-muted-foreground">
-                          {recipe.user.username}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 py-1">
-                      <span className="text-sm font-semibold text-muted-foreground">
-                        {Math.floor(Math.random() * 51)}
-                      </span>
-                      <Heart
-                        className="text-muted-foreground"
-                        size={16}
-                        strokeWidth={2.5}
-                      />
-                    </div>
+              <div className="flex justify-between items-start w-full">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-base font-playful font-semibold">
+                    {recipe.name}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={recipe.user.imageUrl} />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs text-muted-foreground">
+                      {recipe.user.username}
+                    </span>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 py-1">
+                  <LikeButton recipeId={recipe.id} userId={recipe.user.id} />
                 </div>
               </div>
             </RecipeCard>

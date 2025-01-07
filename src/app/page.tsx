@@ -5,8 +5,12 @@ import { getCuisines, getRecipes } from '@/lib/recipes';
 import { Clock } from 'lucide-react';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { ScrollableCategoriesGrid } from '@/components/ScrollableCategoriesGrid';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LikeButton } from '@/components/LikeButton';
+import { currentUser } from '@clerk/nextjs/server';
 
 export default async function HomePage() {
+  const user = await currentUser();
   const cuisines = await getCuisines();
 
   const popularRecipes = await getRecipes({
@@ -32,12 +36,36 @@ export default async function HomePage() {
         rating: 'desc',
       },
     ],
+    select: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          imageUrl: true,
+        },
+      },
+      recipeLikes: {
+        select: {
+          userId: true,
+        },
+      },
+      _count: {
+        select: {
+          recipeLikes: true,
+        },
+      },
+      id: true,
+      name: true,
+      image: true,
+      rating: true,
+      reviewCount: true,
+    },
     take: 5,
   });
 
   return (
     <div className="min-h-screen font-[family-name:var(--font-geist-sans)]">
-      <main className="mx-auto px-4 sm:px-6 lg:px-8 max-w-[1400px] grid place-items-start gap-5 py-8 sm:py-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 grid place-items-start gap-5 py-8 sm:py-12">
         <Navbar />
         {/* Quick Filters */}
         <div className="flex gap-2 overflow-x-auto pb-2">
@@ -54,7 +82,7 @@ export default async function HomePage() {
         </div>
 
         {/* Popular Recipes */}
-        <section className="w-full">
+        <section className="w-full max-w-full overflow-hidden">
           <h2 className="text-lg font-semibold mb-4">Popular Recipes</h2>
           <div className="relative space-y-4 w-full">
             <ScrollableCategoriesGrid cuisines={cuisines} />
@@ -64,17 +92,37 @@ export default async function HomePage() {
         {/* Popular Recipes */}
         <section className="w-full">
           <h2 className="text-lg font-semibold mb-4">Popular Recipes</h2>
-          <div className="relative space-y-4 w-full">
+          <div className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full">
             {popularRecipes.map((recipe) => (
-              <div key={recipe.id} className="relative">
+              <div key={recipe.id}>
                 <RecipeCard
                   className="w-full"
                   recipe={recipe}
                   imageClassName="w-full"
                   imageAspectRatio="video">
-                  <h2 className="text-lg font-playful font-semibold">
-                    {recipe.name}
-                  </h2>
+                  <div className="flex justify-between items-start w-full">
+                    <div className="flex flex-col gap-1">
+                      <h2 className="text-base font-playful font-semibold">
+                        {recipe.name}
+                      </h2>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="w-6 h-6">
+                          <AvatarImage src={recipe.user?.imageUrl} />
+                          <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs text-muted-foreground">
+                          {recipe.user.username}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 py-1">
+                      <LikeButton
+                        recipeId={recipe.id}
+                        userId={user?.id ?? ''}
+                      />
+                    </div>
+                  </div>
                 </RecipeCard>
               </div>
             ))}

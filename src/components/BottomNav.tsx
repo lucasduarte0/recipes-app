@@ -12,7 +12,7 @@ const navItems = {
   center: {
     icon: Plus,
     label: '',
-    href: '/recipes/new',
+    href: '/recipes/create',
   },
   right: [
     { icon: UtensilsCrossed, label: 'Recipes', href: '/recipes' },

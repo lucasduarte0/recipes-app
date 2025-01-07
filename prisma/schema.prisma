@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+  previewFeatures = ["fullTextSearchPostgres", "postgresqlExtensions"]
 }
 
 datasource db {
@@ -11,51 +11,66 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  firstName String   @map("first_name")
-  lastName  String   @map("last_name")
-  email     String   @unique
-  imageUrl  String   @map("image_url")
-  username  String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  recipes   Recipe[]
+  id          String       @id @default(uuid())
+  firstName   String       @map("first_name")
+  lastName    String       @map("last_name")
+  email       String       @unique
+  imageUrl    String       @map("image_url")
+  username    String       @unique
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  recipes     Recipe[]
+  recipeLikes RecipeLike[]
 
   @@map("users")
 }
 
 model Recipe {
-  id                 Int        @id @default(autoincrement())
+  id                 Int          @id @default(autoincrement())
   name               String
-  ingredients        String[]   @default([])
-  instructions       String[]   @default([])
-  prepTimeMinutes    Int?       @map("prep_time_minutes")
-  cookTimeMinutes    Int?       @map("cook_time_minutes")
+  ingredients        String[]     @default([])
+  instructions       String[]     @default([])
+  prepTimeMinutes    Int?         @map("prep_time_minutes")
+  cookTimeMinutes    Int?         @map("cook_time_minutes")
   servings           Int?
   difficulty         String?
   cuisine            String
-  caloriesPerServing Int?       @map("calories_per_serving")
-  tags               String[]   @default([])
+  caloriesPerServing Int?         @map("calories_per_serving")
+  tags               String[]     @default([])
   image              String
   rating             Float?
-  reviewCount        Int?       @map("review_count")
-  mealType           String[]   @map("meal_type")
-  createdAt          DateTime   @default(now()) @map("created_at")
-  updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at")
-  categories         Category[] @relation("CategoryToRecipe")
-  userId             String     @map("user_id")
-  user               User       @relation(fields: [userId], references: [id]) // Changed from User to user for consistency
+  reviewCount        Int?         @map("review_count")
+  mealType           String[]     @map("meal_type")
+  userId             String       @map("user_id")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @default(now()) @updatedAt @map("updated_at")
+  cuisines           Cuisine      @relation(fields: [cuisine], references: [name], onDelete: NoAction, onUpdate: NoAction)
+  user               User         @relation(fields: [userId], references: [id])
+  categories         Category[]   @relation("CategoryToRecipe")
+  recipeLikes        RecipeLike[]
 
   @@map("recipes")
 }
 
 model Cuisine {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
   image       String?
+  recipes     Recipe[]
 
   @@map("cuisines")
+}
+
+model RecipeLike {
+  userId    String   @map("user_id")
+  recipeId  Int      @map("recipe_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, recipeId])
+  @@map("recipe_likes")
 }
 
 model Category {

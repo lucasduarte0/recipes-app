@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "bunx dotenv -e .env.local -- bunx prisma migrate dev"
+    "migrate": "bunx dotenv -e .env.local -- bunx prisma migrate dev",
+    "db:pull": "bunx dotenv -e .env.local -- bunx prisma db pull",
+    "db:push": "bunx dotenv -e .env.local -- bunx prisma db push",
+    "db:generate": "bunx dotenv -e .env.local -- bunx prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.9.6",
@@ -27,11 +30,13 @@
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.10",
     "@types/lodash": "^4.17.13",
+    "@types/lodash.debounce": "^4.0.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "embla-carousel-react": "^8.5.1",
     "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.469.0",
     "next": "15.1.2",
     "next-themes": "^0.4.4",
