@@ -27,13 +27,15 @@ export function ScrollableCategoriesGrid({
             <Card key={cuisine.id} className="w-[160px] shrink-0">
               <Link href={`/recipes?cuisine=${cuisine.name}`}>
                 <CardContent className="p-0">
-                  <Image
-                    src={cuisine.image || '/placeholder.png'}
-                    alt={`Photo by ${cuisine.name}`}
-                    className="h-[100px] w-full object-cover rounded-t-md"
-                    width={160}
-                    height={100}
-                  />
+                  <div className="relative h-[100px] w-full">
+                    <Image
+                      src={cuisine.image || '/placeholder.png'}
+                      alt={`Photo by ${cuisine.name}`}
+                      className="object-cover rounded-t-md"
+                      fill
+                      sizes="160px"
+                    />
+                  </div>
                 </CardContent>
                 <CardFooter className="p-1.5">
                   <p className="text-sm font-medium truncate w-full text-center">

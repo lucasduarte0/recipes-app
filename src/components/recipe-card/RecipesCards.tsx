@@ -26,7 +26,7 @@ export default function RecipesCards({ searchTerm, where }: RecipesCardsProps) {
   } = useRecipes({
     searchTerm,
     where,
-    itemsPerPage: 8,
+    itemsPerPage: 20,
   });
 
   if (isLoading) {

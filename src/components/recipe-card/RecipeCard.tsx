@@ -52,15 +52,16 @@ export function RecipeCard({
               {recipe.image && (
                 <Image
                   className={cn(
-                    'object-cover w-full',
+                    'object-cover',
                     imageHeight,
                     imageClassName
                   )}
                   src={recipe.image}
                   width={350}
                   height={350}
+                  style={{ width: '100%', height: 'auto' }}
                   alt={recipe.name || 'Recipe Image'}
-                  // priority={priority}
+                  priority={true}
                 />
               )}
             </div>
