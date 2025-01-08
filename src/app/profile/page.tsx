@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import prisma from '@/lib/db';
 import { auth } from '@clerk/nextjs/server';
-import { Pencil, Plus } from 'lucide-react';
+import { Edit2, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function ProfilePage() {
@@ -48,8 +48,13 @@ export default async function ProfilePage() {
           <Link href="/profile/edit">Edit Profile</Link>
         </Button>
 
-        <p className="text-primary mt-4">
-          Add a bio to share your cooking journey
+        <p className="text-sm mt-4">
+          {user.bio || (
+            <span className="text-primary flex items-center">
+              <Edit2 size={16} className="mr-1.5 inline-block" />
+              Add a bio to share your cooking journey
+            </span>
+          )}
         </p>
 
         {/* Stats */}
@@ -82,7 +87,7 @@ export default async function ProfilePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {user.recipes.map((recipe) => (
               <div key={recipe.id} className="relative">
                 <RecipeCard recipe={recipe} imageAspectRatio="square">
