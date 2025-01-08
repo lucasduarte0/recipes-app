@@ -2,16 +2,15 @@
 
 import { useRecipes } from '@/hooks/useRecipes';
 import { RecipeWithUser } from '@/lib/types';
-import { RecipeCard } from '../../components/recipe-card/RecipeCard';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '../../components/ui/avatar';
-import { LikeButton } from '../../components/LikeButton';
+import { RecipeCard } from '@/components/recipe-card/RecipeCard';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LikeButton } from '@/components/LikeButton';
 import { Loader2 } from 'lucide-react';
-import LoadMoreIndicator from '../../components/recipe-card/LoadMoreIndicator';
+import LoadMoreIndicator from '@/components/recipe-card/LoadMoreIndicator';
+import { parseAsString, useQueryState, useQueryStates } from 'nuqs';
 import { Prisma } from '@prisma/client';
+import { RecipeFilterParams } from '@/services/recipesFilter';
+import { useEffect } from 'react';
 
 interface InfiniteRecipesProps {
   initialData: {
@@ -24,26 +23,21 @@ interface InfiniteRecipesProps {
   where?: Prisma.RecipeWhereInput;
 }
 
-export function InfiniteRecipes({
-  initialData,
-  searchTerm = '',
-  where = {},
-}: InfiniteRecipesProps) {
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    isFetchingNextPage,
-    isFetching,
-    hasNextPage,
-    ref,
-  } = useRecipes({
+export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: InfiniteRecipesProps) {
+  const { data, isLoading, isError, error, isFetchingNextPage, isFetching, hasNextPage, ref } = useRecipes({
     searchTerm,
     where,
     itemsPerPage: initialData.pageSize,
     initialData,
   });
+
+  // const [{ cuisine, difficulty }, setFilter] = useQueryStates({ cuisine: parseAsString, difficulty: parseAsString });
+
+  // useEffect(() => {
+  //   if (cuisine || difficulty) {
+  //     setFilter({ cuisine, difficulty });
+  //   }
+  // }, [cuisine, difficulty, setFilter]);
 
   if (isLoading) {
     console.log('Loading...');
@@ -56,11 +50,7 @@ export function InfiniteRecipes({
 
   if (isError && error instanceof Error) {
     console.error('Error:', error);
-    return (
-      <div className="w-full text-center text-red-500">
-        Error: {error.message}
-      </div>
-    );
+    return <div className="w-full text-center text-red-500">Error: {error.message}</div>;
   }
 
   if (!data?.pages) {
@@ -77,17 +67,13 @@ export function InfiniteRecipes({
             <RecipeCard key={recipe.id} recipe={recipe} badges={true}>
               <div className="flex justify-between items-start w-full">
                 <div className="flex flex-col gap-1">
-                  <h2 className="text-base font-playful font-semibold">
-                    {recipe.name}
-                  </h2>
+                  <h2 className="text-base font-playful font-semibold">{recipe.name}</h2>
                   <div className="flex items-center gap-2">
                     <Avatar className="w-6 h-6">
                       <AvatarImage src={recipe.user.imageUrl} />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    <span className="text-xs text-muted-foreground">
-                      {recipe.user.username}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{recipe.user.username}</span>
                   </div>
                 </div>
 

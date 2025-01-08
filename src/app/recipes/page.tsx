@@ -1,12 +1,10 @@
 import { Suspense } from 'react';
-import {
-  buildRecipeWhereClause,
-  parseRecipeSearchFilters,
-} from '@/services/recipesFilter';
+import { buildRecipeWhereClause, parseRecipeSearchFilters } from '@/services/recipesFilter';
 import { Loader2 } from 'lucide-react';
 import { searchRecipes } from '@/services/recipes';
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import { InfiniteRecipes } from '@/app/recipes/InfiniteRecipes';
+import { loadSearchParams } from '@/components/SearchParams';
 
 interface RecipePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -14,9 +12,8 @@ interface RecipePageProps {
 
 export default async function RecipesPage({ searchParams }: RecipePageProps) {
   const resolvedParams = await searchParams;
-  const searchTerm =
-    typeof resolvedParams.search === 'string' ? resolvedParams.search : '';
-  const filters = await parseRecipeSearchFilters(resolvedParams);
+  const searchTerm = typeof resolvedParams.search === 'string' ? resolvedParams.search : '';
+  const filters = loadSearchParams.parse(resolvedParams);
   const recipeFilters = await buildRecipeWhereClause(filters);
 
   const { recipes, total, pageSize, hasMore } = await searchRecipes({
@@ -42,11 +39,7 @@ export default async function RecipesPage({ searchParams }: RecipePageProps) {
               <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
             </div>
           }>
-          <InfiniteRecipes
-            initialData={initialData}
-            searchTerm={searchTerm}
-            where={recipeFilters}
-          />
+          <InfiniteRecipes initialData={initialData} searchTerm={searchTerm} where={recipeFilters} />
         </Suspense>
       </main>
     </div>

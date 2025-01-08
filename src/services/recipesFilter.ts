@@ -1,18 +1,18 @@
 'use server';
 
-import { Prisma } from '@prisma/client';
+import { Prisma, RecipeDifficulty } from '@prisma/client';
 import { parseArray, parseNumber } from '@/lib/utils';
 
 export type RecipeFilterParams = {
-  prepTime?: number;
-  cookTime?: number;
-  servings?: number;
-  reviewCount?: number;
-  rating?: number;
-  difficulty?: string;
-  cuisine?: string;
-  tags?: string[];
-  mealType?: string[];
+  prepTime?: number | null;
+  cookTime?: number | null;
+  servings?: number | null;
+  reviewCount?: number | null;
+  rating?: number | null;
+  difficulty?: string | null;
+  cuisine?: string | null;
+  tags?: string[] | null;
+  mealType?: string[] | null;
 };
 
 // Cache the search results for 1 minute
@@ -39,7 +39,15 @@ export const buildRecipeWhereClause = async (filters: RecipeFilterParams) => {
   });
 
   // String equality checks with trimming
-  if (filters.difficulty?.trim()) where.difficulty = filters.difficulty.trim();
+  if (filters.difficulty?.trim()) {
+    const difficulty = filters.difficulty.trim() as RecipeDifficulty;
+    // Optionally, validate that difficulty is a valid enum value
+    if (Object.values(RecipeDifficulty).includes(difficulty)) {
+      where.difficulty = difficulty;
+    } else {
+      // Handle invalid enum value, e.g., throw an error or ignore
+    }
+  }
   if (filters.cuisine?.trim()) where.cuisine = filters.cuisine.trim();
 
   // Array containment checks

@@ -19,7 +19,7 @@ model User {
   username    String       @unique
   bio         String?
   gender      String?
-  birthday    DateTime?    
+  birthday    DateTime?
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
   recipes     Recipe[]
@@ -29,27 +29,27 @@ model User {
 }
 
 model Recipe {
-  id                 Int          @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   name               String
-  ingredients        String[]     @default([])
-  instructions       String[]     @default([])
-  prepTimeMinutes    Int?         @map("prep_time_minutes")
-  cookTimeMinutes    Int?         @map("cook_time_minutes")
+  ingredients        String[]          @default([])
+  instructions       String[]          @default([])
+  prepTimeMinutes    Int?              @map("prep_time_minutes")
+  cookTimeMinutes    Int?              @map("cook_time_minutes")
   servings           Int?
-  difficulty         String?
+  difficulty         RecipeDifficulty?
   cuisine            String
-  caloriesPerServing Int?         @map("calories_per_serving")
-  tags               String[]     @default([])
+  caloriesPerServing Int?              @map("calories_per_serving")
+  tags               String[]          @default([])
   image              String
   rating             Float?
-  reviewCount        Int?         @map("review_count")
-  mealType           String[]     @map("meal_type")
-  userId             String       @map("user_id")
-  createdAt          DateTime     @default(now()) @map("created_at")
-  updatedAt          DateTime     @default(now()) @updatedAt @map("updated_at")
-  cuisines           Cuisine      @relation(fields: [cuisine], references: [name], onDelete: NoAction, onUpdate: NoAction)
-  user               User         @relation(fields: [userId], references: [id])
-  categories         Category[]   @relation("CategoryToRecipe")
+  reviewCount        Int?              @map("review_count")
+  mealType           String[]          @map("meal_type")
+  userId             String            @map("user_id")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @default(now()) @updatedAt @map("updated_at")
+  cuisines           Cuisine           @relation(fields: [cuisine], references: [name], onDelete: NoAction, onUpdate: NoAction)
+  user               User              @relation(fields: [userId], references: [id])
+  categories         Category[]        @relation("CategoryToRecipe")
   recipeLikes        RecipeLike[]
 
   @@map("recipes")
@@ -84,4 +84,10 @@ model Category {
   recipes     Recipe[] @relation("CategoryToRecipe")
 
   @@map("categories")
+}
+
+enum RecipeDifficulty {
+  Easy
+  Medium
+  Hard
 }
