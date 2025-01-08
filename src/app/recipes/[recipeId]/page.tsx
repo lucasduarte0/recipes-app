@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { getRecipeById } from '@/services/recipes';
 import { Clock, Star, ChefHat, ChevronLeft, Edit } from 'lucide-react';
 import { currentUser } from '@clerk/nextjs/server';
 import NumericSelector from '@/components/NumericSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { getRecipeById } from '@/services/recipes';
 
 type Props = {
   params: Promise<{ recipeId: string }>;

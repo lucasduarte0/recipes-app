@@ -1,8 +1,8 @@
-import SearchPageClient from './SearchPageClient';
-import { getCuisines } from '@/services/recipes';
+import { getCuisines } from '@/services/cuisines';
 
 export default async function SearchPage() {
   const cuisines = await getCuisines();
 
-  return <SearchPageClient cuisines={cuisines} />;
+  // return <SearchPageClient cuisines={cuisines} />;
+  return <div>Teste</div>;
 }

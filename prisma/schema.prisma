@@ -18,6 +18,8 @@ model User {
   imageUrl    String       @map("image_url")
   username    String       @unique
   bio         String?
+  gender      String?
+  birthday    DateTime?    
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
   recipes     Recipe[]

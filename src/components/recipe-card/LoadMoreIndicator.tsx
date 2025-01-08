@@ -1,11 +1,11 @@
-import { Loader2 } from "lucide-react";
-import { forwardRef, HTMLProps } from "react";
+import { Loader2 } from 'lucide-react';
+import { forwardRef, HTMLProps } from 'react';
 
 interface LoadMoreIndicatorProps
-  extends Omit<HTMLProps<HTMLDivElement>, "ref"> {
+  extends Omit<HTMLProps<HTMLDivElement>, 'ref'> {
   isFetching: boolean;
   isFetchingNextPage: boolean;
-  hasNextPage: boolean;
+  hasNextPage?: boolean;
 }
 
 const LoadMoreIndicator = forwardRef<HTMLDivElement, LoadMoreIndicatorProps>(
@@ -26,6 +26,6 @@ const LoadMoreIndicator = forwardRef<HTMLDivElement, LoadMoreIndicatorProps>(
   }
 );
 
-LoadMoreIndicator.displayName = "LoadMoreIndicator";
+LoadMoreIndicator.displayName = 'LoadMoreIndicator';
 
 export default LoadMoreIndicator;

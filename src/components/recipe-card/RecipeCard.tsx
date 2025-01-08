@@ -51,15 +51,10 @@ export function RecipeCard({
             <div className={aspectRatioClasses[imageAspectRatio]}>
               {recipe.image && (
                 <Image
-                  className={cn(
-                    'object-cover',
-                    imageHeight,
-                    imageClassName
-                  )}
+                  className={cn('object-cover', imageHeight, imageClassName)}
                   src={recipe.image}
                   width={350}
                   height={350}
-                  style={{ width: '100%', height: 'auto' }}
                   alt={recipe.name || 'Recipe Image'}
                   priority={true}
                 />

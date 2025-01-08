@@ -1,10 +1,9 @@
 'use server';
 
 import { Prisma } from '@prisma/client';
-import { searchRecipes as searchRecipesDb } from '@/services/recipes';
-import { cache } from 'react';
+import { parseArray, parseNumber } from '@/lib/utils';
 
-export type RecipeFilters = {
+export type RecipeFilterParams = {
   prepTime?: number;
   cookTime?: number;
   servings?: number;
@@ -17,78 +16,44 @@ export type RecipeFilters = {
 };
 
 // Cache the search results for 1 minute
-export const getRecipes = cache(
-  async (
-    searchTerm: string = '',
-    filters: RecipeFilters = {},
-    page: number = 0,
-    pageSize: number = 20
-  ) => {
-    const where: Prisma.RecipeWhereInput = {};
+// Builds Prisma where clause from filter parameters
+export const buildRecipeWhereClause = async (filters: RecipeFilterParams) => {
+  const where: Prisma.RecipeWhereInput = {};
 
-    // Add numeric filters
-    if (filters.prepTime) where.prepTimeMinutes = { lte: filters.prepTime };
-    if (filters.cookTime) where.cookTimeMinutes = { lte: filters.cookTime };
-    if (filters.servings) where.servings = filters.servings;
-    if (filters.rating) where.rating = { gte: filters.rating };
-    if (filters.reviewCount) where.reviewCount = { gte: filters.reviewCount };
+  // Numeric comparisons
+  const numericFilters = {
+    prepTimeMinutes: { value: filters.prepTime, operator: 'lte' },
+    cookTimeMinutes: { value: filters.cookTime, operator: 'lte' },
+    servings: { value: filters.servings, operator: 'equals' },
+    rating: { value: filters.rating, operator: 'gte' },
+    reviewCount: { value: filters.reviewCount, operator: 'gte' },
+  } as const;
 
-    // Add string filters
-    if (filters.difficulty?.trim())
-      where.difficulty = filters.difficulty.trim();
-    if (filters.cuisine?.trim()) where.cuisine = filters.cuisine.trim();
-
-    // Add array filters
-    if (filters.tags?.length) where.tags = { hasEvery: filters.tags };
-    if (filters.mealType?.length)
-      where.mealType = { hasEvery: filters.mealType };
-
-    try {
-      const skip = page * pageSize;
-      const result = await searchRecipesDb(
-        { searchTerm, where },
-        skip,
-        pageSize
-      );
-
-      return {
-        recipes: result.recipes,
-        pagination: {
-          total: result.total,
-          pageSize: result.take,
-          currentPage: page,
-          totalPages: Math.ceil(result.total / pageSize),
-          hasMore: skip + result.take < result.total,
-        },
+  // Apply numeric filters if values exist
+  Object.entries(numericFilters).forEach(([key, config]) => {
+    if (config.value) {
+      where[key as keyof typeof numericFilters] = {
+        [config.operator]: config.value,
       };
-    } catch (error) {
-      console.error('Error fetching recipes:', error);
-      throw new Error('Failed to fetch recipes');
     }
-  }
-);
+  });
+
+  // String equality checks with trimming
+  if (filters.difficulty?.trim()) where.difficulty = filters.difficulty.trim();
+  if (filters.cuisine?.trim()) where.cuisine = filters.cuisine.trim();
+
+  // Array containment checks
+  if (filters.tags?.length) where.tags = { hasEvery: filters.tags };
+  if (filters.mealType?.length) where.mealType = { hasEvery: filters.mealType };
+
+  return where;
+};
 
 // Helper to parse and validate filters from URL search params
-export async function parseFilters(searchParams: {
+export async function parseRecipeSearchFilters(searchParams: {
   [key: string]: string | string[] | undefined;
-}): Promise<RecipeFilters> {
-  const filters: RecipeFilters = {};
-
-  // Helper to parse number
-  const parseNumber = (value: string | undefined): number | undefined => {
-    if (!value) return undefined;
-    const num = Number(value);
-    return isNaN(num) ? undefined : num;
-  };
-
-  // Helper to parse array
-  const parseArray = (
-    value: string | string[] | undefined
-  ): string[] | undefined => {
-    if (!value) return undefined;
-    const arr = Array.isArray(value) ? value : value.split(',');
-    return arr.filter(Boolean).map((item) => item.trim());
-  };
+}): Promise<RecipeFilterParams> {
+  const filters: RecipeFilterParams = {};
 
   // Parse numeric filters
   filters.prepTime = parseNumber(searchParams.prepTime?.toString());
@@ -106,13 +71,4 @@ export async function parseFilters(searchParams: {
   filters.mealType = parseArray(searchParams.mealType);
 
   return filters;
-}
-
-// Server action for fetching more recipes
-export async function fetchMoreRecipes(
-  searchTerm: string,
-  filters: RecipeFilters,
-  page: number
-) {
-  return getRecipes(searchTerm, filters, page);
 }

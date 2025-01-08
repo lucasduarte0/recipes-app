@@ -13,13 +13,15 @@ async function updateProfile(formData: FormData) {
   }
 
   const firstName = formData.get('firstName') as string;
-  const lastName = formData.get('lastName') as string;
   const username = formData.get('username') as string;
   const email = formData.get('email') as string;
+  const bio = formData.get('bio') as string;
+  const gender = formData.get('gender') as string;
+  const birthday = formData.get('birthday') as string;
 
   // Basic validation
-  if (!firstName || !lastName || !username || !email) {
-    throw new Error('All fields are required');
+  if (!firstName || !username || !email) {
+    throw new Error('Required fields are missing');
   }
 
   // Email validation
@@ -52,9 +54,11 @@ async function updateProfile(formData: FormData) {
       where: { id: userId },
       data: {
         firstName,
-        lastName,
         username,
         email,
+        bio: bio || null,
+        gender: gender || null,
+        birthday: birthday ? new Date(birthday) : null,
       },
     });
   } catch (error) {
@@ -84,13 +88,10 @@ export default async function EditProfilePage() {
   }
 
   return (
-    <main className="container max-w-lg mx-auto px-4 py-8">
+    <main className="container max-w-lg mx-auto px-4">
       <div className="space-y-6">
-        <div>
+        <div className="pt-4 pb-2">
           <h1 className="text-2xl font-bold">Edit Profile</h1>
-          <p className="text-muted-foreground">
-            Update your profile information
-          </p>
         </div>
 
         <EditProfileForm user={user} updateProfile={updateProfile} />

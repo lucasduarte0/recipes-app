@@ -26,6 +26,9 @@ export function useLikeRecipe(recipeId: number, userId: string | null) {
     queryKey: ['recipeLike', recipeId, userId],
     queryFn: fetchLikeStatus,
     enabled: !!recipeId,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep in garbage collection for 30 minutes
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
   const mutation = useMutation<boolean, Error, void, MutationContext>({
@@ -73,9 +76,14 @@ export function useLikeRecipe(recipeId: number, userId: string | null) {
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['recipeLike', recipeId, userId],
-      });
+      // Delay invalidation to prevent UI jank and batch potential updates
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['recipeLike', recipeId, userId],
+          // Only refetch if data is stale
+          refetchType: 'active',
+        });
+      }, 1000);
     },
   });
 

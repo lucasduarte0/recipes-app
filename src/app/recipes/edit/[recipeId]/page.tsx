@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getCuisines, getRecipeById } from '@/services/recipes';
 import { EditRecipeForm } from './EditRecipeForm';
+import { getCuisines } from '@/services/cuisines';
+import { getRecipeById } from '@/services/recipes';
 
 interface EditRecipePageProps {
   params: Promise<{ recipeId: string }>;

@@ -1,13 +1,14 @@
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { getCuisines, getPopularRecipes } from '@/services/recipes';
 import { Clock } from 'lucide-react';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { ScrollableCategoriesGrid } from '@/components/ScrollableCategoriesGrid';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LikeButton } from '@/components/LikeButton';
 import { currentUser } from '@clerk/nextjs/server';
+import { getCuisines } from '@/services/cuisines';
+import { getPopularRecipes } from '@/services/recipes';
 
 export default async function HomePage() {
   const user = await currentUser();

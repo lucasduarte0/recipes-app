@@ -1,26 +1,40 @@
 import { Suspense } from 'react';
-import { getRecipes, parseFilters } from '@/services/recipesFilter';
-import { RecipesGrid } from '@/components/recipe-card/RecipesGrid';
+import {
+  buildRecipeWhereClause,
+  parseRecipeSearchFilters,
+} from '@/services/recipesFilter';
 import { Loader2 } from 'lucide-react';
+import { searchRecipes } from '@/services/recipes';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { InfiniteRecipes } from '@/app/recipes/InfiniteRecipes';
 
-interface PageProps {
+interface RecipePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function Page({ searchParams }: PageProps) {
-  // Await the search params promise
+export default async function RecipesPage({ searchParams }: RecipePageProps) {
   const resolvedParams = await searchParams;
-
-  // Parse search term and filters from URL
   const searchTerm =
     typeof resolvedParams.search === 'string' ? resolvedParams.search : '';
-  const filters = await parseFilters(resolvedParams);
+  const filters = await parseRecipeSearchFilters(resolvedParams);
+  const recipeFilters = await buildRecipeWhereClause(filters);
 
-  // Fetch initial data
-  const initialData = await getRecipes(searchTerm, filters, 0, 20);
+  const { recipes, total, pageSize, hasMore } = await searchRecipes({
+    searchTerm,
+    where: recipeFilters,
+    page: Number(resolvedParams.page) || 0,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
+
+  const initialData = {
+    recipes,
+    total,
+    pageSize,
+    hasMore: hasMore ?? false,
+  };
 
   return (
-    <div className="min-h-screen font-[family-name:var(--font-geist-sans)]">
+    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
       <main className="mx-auto px-4 sm:px-6 lg:px-8 max-w-[1400px] grid place-items-start gap-5 py-8 sm:py-12">
         <Suspense
           fallback={
@@ -28,10 +42,10 @@ export default async function Page({ searchParams }: PageProps) {
               <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
             </div>
           }>
-          <RecipesGrid
-            searchParams={resolvedParams}
+          <InfiniteRecipes
             initialData={initialData}
-            filters={filters}
+            searchTerm={searchTerm}
+            where={recipeFilters}
           />
         </Suspense>
       </main>

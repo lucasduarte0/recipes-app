@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { Cuisine, Recipe } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { updateRecipe } from '@/services/recipes';
 import { RecipeFormValues, recipeFormSchema } from './schema';
 import { Button } from '@/components/ui/button';
 // import { ImageUpload } from '@/components/ui/image-upload';
@@ -30,6 +29,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { ListField } from '@/components/ui/list-field';
 import { TagsInput } from '@/components/ui/tags-input';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { updateRecipe } from '@/services/recipes';
 
 interface EditRecipeFormProps {
   recipe: Recipe;

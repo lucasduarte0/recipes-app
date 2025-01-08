@@ -6,12 +6,13 @@ import prisma from '@/lib/db';
 import { auth } from '@clerk/nextjs/server';
 import { Edit2, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 export default async function ProfilePage() {
   const { userId } = await auth();
 
   if (!userId) {
-    return null;
+    redirect('/');
   }
 
   const user = await prisma.user.findUnique({
