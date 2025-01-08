@@ -2,7 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
-import { getLikeStatus, toggleLike } from '@/lib/recipes';
+import { getLikeStatus, toggleLike } from '@/services/likes';
+
 
 type LikeStatus = {
   isLiked: boolean;

@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getCuisines, getRecipeById } from '@/lib/recipes';
+import { getCuisines, getRecipeById } from '@/services/recipes';
 import { EditRecipeForm } from './EditRecipeForm';
 
 interface EditRecipePageProps {

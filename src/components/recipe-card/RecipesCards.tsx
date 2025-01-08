@@ -8,8 +8,8 @@ import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import LoadMoreIndicator from '@/components/recipe-card/LoadMoreIndicator';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { LikeButton } from '../LikeButton';
-import type { RecipeFilters } from '@/services/recipes';
-import { fetchMoreRecipes } from '@/services/recipes';
+import type { RecipeFilters } from '@/services/recipesFilter';
+import { fetchMoreRecipes } from '@/services/recipesFilter';
 import { RecipeWithUser } from '@/lib/types';
 
 interface RecipesCardsProps {
@@ -53,8 +53,10 @@ export default function RecipesCards({
       pages: [initialData],
       pageParams: [0],
     },
-    getNextPageParam: (lastPage) => 
-      lastPage.pagination.hasMore ? lastPage.pagination.currentPage + 1 : undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasMore
+        ? lastPage.pagination.currentPage + 1
+        : undefined,
     staleTime: 1000 * 60, // 1 minute
   });
 

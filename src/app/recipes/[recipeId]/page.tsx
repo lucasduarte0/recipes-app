@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { getRecipeById } from '@/lib/recipes';
+import { getRecipeById } from '@/services/recipes';
 import { Clock, Star, ChefHat, ChevronLeft, Edit } from 'lucide-react';
 import { currentUser } from '@clerk/nextjs/server';
 import NumericSelector from '@/components/NumericSelector';

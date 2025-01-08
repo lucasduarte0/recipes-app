@@ -1,6 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getCuisines } from '@/lib/recipes';
+import { getCuisines } from '@/services/recipes';
 import { CreateRecipeForm } from './CreateRecipeForm';
 
 export default async function CreateRecipePage() {

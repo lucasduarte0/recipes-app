@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
 import Search from '@/components/Search';
 import RecipesCards from '@/components/recipe-card/RecipesCards';
-import type { RecipeFilters } from '@/services/recipes';
+import type { RecipeFilters } from '@/services/recipesFilter';
 import { RecipeWithUser } from '@/lib/types';
 
 interface RecipesGridProps {

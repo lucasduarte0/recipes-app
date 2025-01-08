@@ -4,7 +4,7 @@ import { ChangeEvent, useState } from 'react';
 import Image from 'next/image';
 import { Input } from './input';
 import { FormControl, FormItem, FormLabel, FormMessage } from './form';
-import { uploadImage } from '@/lib/recipes';
+import { uploadRecipeImage } from '@/services/storage';
 
 interface ImageUploadProps {
   value?: string;
@@ -12,9 +12,13 @@ interface ImageUploadProps {
   label?: string;
 }
 
-export function ImageUpload({ value, onChange, label = 'Image' }: ImageUploadProps) {
+export function ImageUpload({
+  value,
+  onChange,
+  label = 'Image',
+}: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Extract filename from URL
   const currentImageName = value ? value.split('/').pop() : null;
 
@@ -31,8 +35,8 @@ export function ImageUpload({ value, onChange, label = 'Image' }: ImageUploadPro
     try {
       setIsUploading(true);
       const fileName = `${Date.now()}-${file.name}`;
-      const data = await uploadImage(file, fileName);
-      
+      const data = await uploadRecipeImage(file, fileName);
+
       if (data?.path) {
         const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/recipes/${data.path}`;
         onChange(imageUrl);
@@ -60,9 +64,7 @@ export function ImageUpload({ value, onChange, label = 'Image' }: ImageUploadPro
             </div>
           ) : (
             <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center">
-              <span className="text-muted-foreground">
-                No image selected
-              </span>
+              <span className="text-muted-foreground">No image selected</span>
             </div>
           )}
           <div className="space-y-2 w-full">

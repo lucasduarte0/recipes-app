@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Cuisine, Recipe } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { updateRecipe } from '@/lib/recipes';
+import { updateRecipe } from '@/services/recipes';
 import { RecipeFormValues, recipeFormSchema } from './schema';
 import { Button } from '@/components/ui/button';
 // import { ImageUpload } from '@/components/ui/image-upload';

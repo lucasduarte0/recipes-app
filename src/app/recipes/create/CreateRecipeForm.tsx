@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Cuisine } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { createRecipe } from '@/lib/recipes';
+import { createRecipe } from '@/services/recipes';
 import { RecipeFormValues, recipeFormSchema } from '../edit/[recipeId]/schema';
 import { Button } from '@/components/ui/button';
 import {
@@ -83,7 +83,7 @@ export function CreateRecipeForm({ userId, cuisines }: CreateRecipeFormProps) {
         mealType: data.mealType || [],
         image: '/placeholder-recipe.jpg',
       };
-      
+
       const recipe = await createRecipe(userId, recipeData);
       router.push(`/recipes/${recipe.id}`);
       router.refresh();

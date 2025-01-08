@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { searchRecipes } from '@/lib/recipes';
+import { searchRecipes } from '@/services/recipes';
 import { Prisma } from '@prisma/client';
 
 interface UseRecipesOptions {

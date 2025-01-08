@@ -1,7 +1,7 @@
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { getCuisines, getRecipes } from '@/lib/recipes';
+import { getCuisines, getPopularRecipes } from '@/services/recipes';
 import { Clock } from 'lucide-react';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { ScrollableCategoriesGrid } from '@/components/ScrollableCategoriesGrid';
@@ -13,55 +13,7 @@ export default async function HomePage() {
   const user = await currentUser();
   const cuisines = await getCuisines();
 
-  const popularRecipes = await getRecipes({
-    where: {
-      AND: [
-        {
-          rating: {
-            gte: 4,
-          },
-        },
-        {
-          reviewCount: {
-            not: null,
-          },
-        },
-      ],
-    },
-    orderBy: [
-      {
-        reviewCount: 'desc',
-      },
-      {
-        rating: 'desc',
-      },
-    ],
-    select: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          imageUrl: true,
-        },
-      },
-      recipeLikes: {
-        select: {
-          userId: true,
-        },
-      },
-      _count: {
-        select: {
-          recipeLikes: true,
-        },
-      },
-      id: true,
-      name: true,
-      image: true,
-      rating: true,
-      reviewCount: true,
-    },
-    take: 5,
-  });
+  const popularRecipes = await getPopularRecipes(5);
 
   return (
     <div className="min-h-screen font-[family-name:var(--font-geist-sans)]">

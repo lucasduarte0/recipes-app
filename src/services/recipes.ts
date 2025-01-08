@@ -1,106 +1,197 @@
 'use server';
+import { Cuisine, Prisma } from '@prisma/client';
+import prisma from '../lib/db';
 
-import { Prisma } from '@prisma/client';
-import { searchRecipes as searchRecipesDb } from '@/lib/recipes';
-import { cache } from 'react';
-
-export type RecipeFilters = {
-  prepTime?: number;
-  cookTime?: number;
-  servings?: number;
-  reviewCount?: number;
-  rating?: number;
-  difficulty?: string;
-  cuisine?: string;
-  tags?: string[];
-  mealType?: string[];
+type RecipeFilters = {
+  searchTerm?: string;
+  where?: Prisma.RecipeWhereInput;
 };
 
-// Cache the search results for 1 minute
-export const getRecipes = cache(async (
-  searchTerm: string = '',
-  filters: RecipeFilters = {},
-  page: number = 0,
-  pageSize: number = 20
-) => {
-  const where: Prisma.RecipeWhereInput = {};
-
-  // Add numeric filters
-  if (filters.prepTime) where.prepTimeMinutes = { lte: filters.prepTime };
-  if (filters.cookTime) where.cookTimeMinutes = { lte: filters.cookTime };
-  if (filters.servings) where.servings = filters.servings;
-  if (filters.rating) where.rating = { gte: filters.rating };
-  if (filters.reviewCount) where.reviewCount = { gte: filters.reviewCount };
-
-  // Add string filters
-  if (filters.difficulty?.trim()) where.difficulty = filters.difficulty.trim();
-  if (filters.cuisine?.trim()) where.cuisine = filters.cuisine.trim();
-
-  // Add array filters
-  if (filters.tags?.length) where.tags = { hasEvery: filters.tags };
-  if (filters.mealType?.length) where.mealType = { hasEvery: filters.mealType };
-
-  try {
-    const skip = page * pageSize;
-    const result = await searchRecipesDb({ searchTerm, where }, skip, pageSize);
-    
-    return {
-      recipes: result.recipes,
-      pagination: {
-        total: result.total,
-        pageSize: result.take,
-        currentPage: page,
-        totalPages: Math.ceil(result.total / pageSize),
-        hasMore: skip + result.take < result.total
+export async function searchRecipes(
+  { searchTerm = '', where = {} }: RecipeFilters,
+  skip = 0,
+  take = 10
+) {
+  // Combine search term filter with provided where clause
+  const searchFilter: Prisma.RecipeWhereInput = searchTerm.trim()
+    ? {
+        OR: [
+          {
+            name: {
+              contains: searchTerm.trim(),
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            tags: {
+              has: searchTerm.trim(),
+            },
+          },
+        ],
       }
-    };
-  } catch (error) {
-    console.error('Error fetching recipes:', error);
-    throw new Error('Failed to fetch recipes');
-  }
-});
+    : {};
 
-// Helper to parse and validate filters from URL search params
-export async function parseFilters(searchParams: { [key: string]: string | string[] | undefined }): Promise<RecipeFilters> {
-  const filters: RecipeFilters = {};
-
-  // Helper to parse number
-  const parseNumber = (value: string | undefined): number | undefined => {
-    if (!value) return undefined;
-    const num = Number(value);
-    return isNaN(num) ? undefined : num;
+  // Combine all filters using AND
+  const finalWhere: Prisma.RecipeWhereInput = {
+    AND: [
+      searchFilter,
+      where, // Include the provided where clause
+    ].filter(Boolean), // Remove empty filters
   };
 
-  // Helper to parse array
-  const parseArray = (value: string | string[] | undefined): string[] | undefined => {
-    if (!value) return undefined;
-    const arr = Array.isArray(value) ? value : value.split(',');
-    return arr.filter(Boolean).map(item => item.trim());
+  const select: Prisma.RecipeSelect = {
+    id: true,
+    name: true,
+    image: true,
+    prepTimeMinutes: true,
+    cookTimeMinutes: true,
+    servings: true,
+    difficulty: true,
+    cuisine: true,
+    rating: true,
+    reviewCount: true,
+    tags: true,
+    mealType: true,
+    user: {
+      select: {
+        id: true,
+        username: true,
+        imageUrl: true,
+      },
+    },
   };
 
-  // Parse numeric filters
-  filters.prepTime = parseNumber(searchParams.prepTime?.toString());
-  filters.cookTime = parseNumber(searchParams.cookTime?.toString());
-  filters.servings = parseNumber(searchParams.servings?.toString());
-  filters.rating = parseNumber(searchParams.rating?.toString());
-  filters.reviewCount = parseNumber(searchParams.reviewCount?.toString());
+  const recipes = await prisma.recipe.findMany({
+    where: finalWhere,
+    select,
+    take,
+    skip,
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+  const total = await prisma.recipe.count({ where: finalWhere });
 
-  // Parse string filters
-  filters.difficulty = searchParams.difficulty?.toString();
-  filters.cuisine = searchParams.cuisine?.toString();
+  console.log(`Found ${recipes.length} recipes matching the criteria`);
 
-  // Parse array filters
-  filters.tags = parseArray(searchParams.tags);
-  filters.mealType = parseArray(searchParams.mealType);
-
-  return filters;
+  return { recipes, total, take };
 }
 
-// Server action for fetching more recipes
-export async function fetchMoreRecipes(
-  searchTerm: string,
-  filters: RecipeFilters,
-  page: number
+// Get Recipes
+export async function getRecipes<T extends Prisma.RecipeFindManyArgs>(
+  args: T
+): Promise<Prisma.RecipeGetPayload<T>[]> {
+  return (await prisma.recipe.findMany(args)) as Prisma.RecipeGetPayload<T>[];
+}
+
+export async function getAllRecipes() {
+  return await prisma.recipe.findMany();
+}
+
+export async function getCuisines(): Promise<Cuisine[]> {
+  const cuisines = await prisma.cuisine.findMany();
+
+  return cuisines;
+}
+
+export async function getRecipeById(id: number) {
+  return await prisma.recipe.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          imageUrl: true,
+        },
+      },
+      categories: true,
+    },
+  });
+}
+
+export async function updateRecipe(
+  id: number,
+  userId: string,
+  data: Prisma.RecipeUpdateInput
 ) {
-  return getRecipes(searchTerm, filters, page);
+  // Verify ownership
+  const recipe = await prisma.recipe.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
+
+  if (!recipe || recipe.userId !== userId) {
+    throw new Error('Unauthorized');
+  }
+
+  return await prisma.recipe.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function createRecipe(
+  userId: string,
+  data: Omit<Prisma.RecipeUncheckedCreateInput, 'userId'>
+) {
+  return await prisma.recipe.create({
+    data: {
+      ...data,
+      userId,
+    },
+  });
+}
+
+
+export async function getPopularRecipes(take = 5) {
+  return await getRecipes({
+    where: {
+      AND: [
+        {
+          rating: {
+            gte: 4,
+          },
+        },
+        {
+          reviewCount: {
+            not: null,
+          },
+        },
+      ],
+    },
+    orderBy: [
+      {
+        reviewCount: 'desc',
+      },
+      {
+        rating: 'desc',
+      },
+    ],
+    select: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          imageUrl: true,
+        },
+      },
+      recipeLikes: {
+        select: {
+          userId: true,
+        },
+      },
+      _count: {
+        select: {
+          recipeLikes: true,
+        },
+      },
+      id: true,
+      name: true,
+      image: true,
+      rating: true,
+      reviewCount: true,
+    },
+    take,
+  });
 }
