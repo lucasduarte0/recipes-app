@@ -1,30 +1,32 @@
 'use client';
 
 import { useRecipes } from '@/hooks/useRecipes';
-import { RecipeWhereInput, RecipeWithUser } from '@/lib/types';
+import { RecipeWhereInput, RecipeWithUserAndLikeFlag } from '@/lib/types';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // import { LikeButton } from '@/components/LikeButton';
 import { Loader2 } from 'lucide-react';
 import LoadMoreIndicator from '@/components/recipe-card/LoadMoreIndicator';
-
+import { LikeButton } from '@/components/LikeButton';
 interface InfiniteRecipesProps {
   initialData: {
-    recipes: RecipeWithUser[];
+    recipes: RecipeWithUserAndLikeFlag[];
     total: number;
     pageSize: number;
     hasMore: boolean;
   };
   searchTerm?: string;
   where?: RecipeWhereInput;
+  userId?: string;
 }
 
-export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: InfiniteRecipesProps) {
+export function InfiniteRecipes({ initialData, searchTerm = '', where = {}, userId }: InfiniteRecipesProps) {
   const { data, isLoading, isError, error, isFetchingNextPage, isFetching, hasNextPage, ref } = useRecipes({
     searchTerm,
     where,
     itemsPerPage: initialData.pageSize,
     initialData,
+    userId,
   });
 
   if (isLoading) {
@@ -51,7 +53,7 @@ export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: In
       <div
         className={`w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 transition-opacity duration-200`}>
         {data.pages.map((page) =>
-          page.recipes.map((recipe: RecipeWithUser) => (
+          page.recipes.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} badges={true}>
               <div className="flex justify-between items-start w-full">
                 <div className="flex flex-col gap-1">
@@ -66,7 +68,11 @@ export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: In
                 </div>
 
                 <div className="flex items-center gap-2 py-1">
-                  {/* <LikeButton recipeId={recipe.id} userId={recipe.user.id} /> */}
+                  <LikeButton
+                    recipeId={recipe.id}
+                    isLiked={recipe.hasUserLiked}
+                    likeCount={recipe._count.recipeLikes}
+                  />
                 </div>
               </div>
             </RecipeCard>

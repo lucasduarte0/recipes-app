@@ -7,19 +7,22 @@ import { InfiniteRecipes } from '@/app/recipes/InfiniteRecipes';
 import { loadSearchParams } from '@/components/SearchParams';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterSelector } from '@/components/FilterSelector';
+import { currentUser } from '@clerk/nextjs/server';
 
 interface RecipePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function RecipesPage({ searchParams }: RecipePageProps) {
+  const user = await currentUser();
+
   // Load searchParams with search and filter
   const { search, ...filters } = await loadSearchParams.parse(searchParams);
 
   // Build the where clause for the recipes filter
   const where = await buildRecipeWhereClause(filters);
 
-  console.log(where)
+  console.log(where);
 
   // set 'searchTerm' undefined if null
   const searchTerm = search ?? undefined;
@@ -30,6 +33,7 @@ export default async function RecipesPage({ searchParams }: RecipePageProps) {
     where,
     page: 0,
     pageSize: DEFAULT_PAGE_SIZE,
+    userId: user?.id,
   });
 
   return (
@@ -43,7 +47,7 @@ export default async function RecipesPage({ searchParams }: RecipePageProps) {
           }>
           <SearchBar />
           <FilterSelector />
-          <InfiniteRecipes initialData={initialData} searchTerm={searchTerm} where={where} />
+          <InfiniteRecipes initialData={initialData} searchTerm={searchTerm} where={where} userId={user?.id} />
         </Suspense>
       </main>
     </div>

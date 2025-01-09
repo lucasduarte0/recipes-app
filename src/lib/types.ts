@@ -22,7 +22,17 @@ export type RecipeWithUser = Prisma.RecipeGetPayload<{
         imageUrl: true;
       };
     };
+    _count: {
+      select: {
+        recipeLikes: true;
+      };
+    };
   };
 }>;
+
+// Create a new type with the extra userHasLiked field
+export type RecipeWithUserAndLikeFlag = RecipeWithUser & {
+  hasUserLiked?: boolean;
+};
 
 export type RecipeWhereInput = Prisma.RecipeWhereInput;

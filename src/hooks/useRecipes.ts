@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { searchRecipes } from '@/services/recipes';
-import { RecipeWhereInput, RecipeWithUser } from '@/lib/types';
+import { RecipeWhereInput, RecipeWithUserAndLikeFlag } from '@/lib/types';
 
 interface UseRecipesOptions {
   searchTerm?: string;
@@ -10,11 +10,12 @@ interface UseRecipesOptions {
   itemsPerPage?: number;
   staleTime?: number;
   initialData?: {
-    recipes: RecipeWithUser[];
+    recipes: RecipeWithUserAndLikeFlag[];
     total: number;
     pageSize: number;
     hasMore: boolean;
   };
+  userId?: string; // Add userId to the options
 }
 
 export function useRecipes({
@@ -23,6 +24,7 @@ export function useRecipes({
   itemsPerPage = 8,
   staleTime = 1000 * 60 * 5, // 5 minutes default
   initialData,
+  userId,
 }: UseRecipesOptions = {}) {
   // Memoize the where clause to prevent unnecessary re-renders
   const whereKey = JSON.stringify(where);
@@ -47,6 +49,7 @@ export function useRecipes({
           where,
           page: pageParam,
           pageSize: itemsPerPage,
+          userId,
         });
         const performanceEnd = performance.now(); // End time measurement
         // Log the performance

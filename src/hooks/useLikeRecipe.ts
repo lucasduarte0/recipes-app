@@ -1,96 +1,32 @@
-'use client';
+import { useMutation } from '@tanstack/react-query';
+import { toggleLike } from '@/services/likes';
+import { toast } from '@/hooks/useToast';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/useToast';
-import { getLikeStatus, toggleLike } from '@/services/likes';
-
-
-type LikeStatus = {
-  isLiked: boolean;
-  likeCount: number;
-};
-
-type MutationContext = {
-  previousData: LikeStatus | undefined;
-};
-
-export function useLikeRecipe(recipeId: number, userId: string | null) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const fetchLikeStatus = async (): Promise<LikeStatus> => {
-    return getLikeStatus(recipeId, userId);
-  };
-
-  const { data, isLoading } = useQuery<LikeStatus>({
-    queryKey: ['recipeLike', recipeId, userId],
-    queryFn: fetchLikeStatus,
-    enabled: !!recipeId,
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep in garbage collection for 30 minutes
-    refetchOnWindowFocus: false, // Prevent unnecessary refetches
-  });
-
-  const mutation = useMutation<boolean, Error, void, MutationContext>({
-    mutationFn: async () => {
+export function useLikeRecipe(userId?: string) {
+  const { mutate: handleToggleLike } = useMutation({
+    mutationFn: async (recipeId: number) => {
       if (!userId) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please sign in to like recipes',
+        });
         throw new Error('Authentication required');
       }
-      console.log('Toggling like status for recipeId:', recipeId, 'userId:', userId);
       return toggleLike(recipeId, userId);
     },
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ['recipeLike', recipeId, userId],
-      });
-      const previousData = queryClient.getQueryData<LikeStatus>([
-        'recipeLike',
-        recipeId,
-        userId,
-      ]);
-
-      queryClient.setQueryData<LikeStatus>(
-        ['recipeLike', recipeId, userId],
-        (old) => ({
-          isLiked: !old?.isLiked,
-          likeCount: (old?.likeCount ?? 0) + (old?.isLiked ? -1 : 1),
-        })
-      );
-
-      return { previousData };
-    },
-    onError: (error, _, context) => {
-      if (context) {
-        queryClient.setQueryData(
-          ['recipeLike', recipeId, userId],
-          context.previousData
-        );
+    onError: (error) => {
+      if (error instanceof Error && error.message === 'Authentication required') {
+        return; // Toast already shown in mutationFn
       }
       toast({
         title: 'Error',
-        description:
-          error.message === 'Authentication required'
-            ? 'Please sign in to like recipes'
-            : 'Failed to update like status',
-        variant: 'destructive',
+        description: 'Failed to save like status',
       });
     },
-    onSettled: () => {
-      // Delay invalidation to prevent UI jank and batch potential updates
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ['recipeLike', recipeId, userId],
-          // Only refetch if data is stale
-          refetchType: 'active',
-        });
-      }, 1000);
-    },
+    // onSuccess: () => {
+    //   console.log('Like status updated successfully');
+    // },
   });
 
-  return {
-    isLiked: data?.isLiked ?? false,
-    likeCount: data?.likeCount ?? 0,
-    isLoading,
-    toggleLike: () => mutation.mutate(),
-  };
+  return { handleToggleLike };
 }

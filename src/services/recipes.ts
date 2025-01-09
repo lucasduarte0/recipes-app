@@ -44,11 +44,13 @@ export async function searchRecipes({
   where = {},
   page = 0, // Change the default page to 0
   pageSize = DEFAULT_PAGE_SIZE,
+  userId,
 }: {
   searchTerm?: string;
   where?: Prisma.RecipeWhereInput;
   page?: number;
   pageSize?: number;
+  userId?: string;
 }) {
   // Make a console time start here
   const performanceStart = performance.now(); // Start time measurement
@@ -86,21 +88,35 @@ export async function searchRecipes({
           recipeLikes: true,
         },
       },
+      recipeLikes: userId
+        ? {
+            where: { userId },
+            select: { userId: true },
+          }
+        : undefined,
     },
     take: pageSize + 1, // Take one extra to determine if there's more
     skip,
     orderBy: { createdAt: 'desc' },
   });
 
+  // Determine if there's more data to load
   const hasMore = recipes.length > pageSize;
+  // Remove the extra recipe if there's more data to load
   const actualRecipes = hasMore ? recipes.slice(0, -1) : recipes;
+
+  // Add if userHasLiked to each recipe
+  const transformedRecipes = actualRecipes.map((recipe) => ({
+    ...recipe,
+    hasUserLiked: recipe.recipeLikes?.length > 0,
+  }));
 
   // Consote performance end here and log it
   const performanceEnd = performance.now();
   console.log(`Performance: ${performanceEnd - performanceStart}ms`);
 
   return {
-    recipes: actualRecipes,
+    recipes: transformedRecipes,
     total: skip + actualRecipes.length + (hasMore ? 1 : 0),
     pageSize,
     hasMore,
