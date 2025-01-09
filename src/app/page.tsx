@@ -5,7 +5,7 @@ import { Clock } from 'lucide-react';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { ScrollableCategoriesGrid } from '@/components/ScrollableCategoriesGrid';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LikeButton } from '@/components/LikeButton';
+// import { LikeButton } from '@/components/LikeButton';
 import { currentUser } from '@clerk/nextjs/server';
 import { getCuisines } from '@/services/cuisines';
 import { getPopularRecipes } from '@/services/recipes';
@@ -48,32 +48,24 @@ export default async function HomePage() {
           <div className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full">
             {popularRecipes.map((recipe) => (
               <div key={recipe.id}>
-                <RecipeCard
-                  className="w-full"
-                  recipe={recipe}
-                  imageClassName="w-full"
-                  imageAspectRatio="video">
+                <RecipeCard className="w-full" recipe={recipe} imageClassName="w-full" imageAspectRatio="video">
                   <div className="flex justify-between items-start w-full">
                     <div className="flex flex-col gap-1">
-                      <h2 className="text-base font-playful font-semibold">
-                        {recipe.name}
-                      </h2>
+                      <h2 className="text-base font-playful font-semibold">{recipe.name}</h2>
                       <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
                           <AvatarImage src={recipe.user?.imageUrl} />
                           <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
-                        <span className="text-xs text-muted-foreground">
-                          {recipe.user.username}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{recipe.user.username}</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 py-1">
-                      <LikeButton
+                      {/* <LikeButton
                         recipeId={recipe.id}
                         userId={user?.id ?? ''}
-                      />
+                      /> */}
                     </div>
                   </div>
                 </RecipeCard>

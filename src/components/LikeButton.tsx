@@ -13,7 +13,7 @@ export const LikeButton = React.memo(function LikeButton({
   recipeId,
   userId,
 }: HeartButtonProps) {
-  const { isLiked, likeCount, toggleLike } = useLikeRecipe(recipeId, userId);
+  // const { isLiked, likeCount, toggleLike } = useLikeRecipe(recipeId, userId);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();

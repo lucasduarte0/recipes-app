@@ -13,9 +13,8 @@ export const searchParamsSchema = {
   difficulty: parseAsString,
   cuisine: parseAsString,
 
-  // Array recipe filters
-  // tags: parseAsArrayOf,
-  // mealType: parseArray.withDefault([]),
+  // Search term
+  search: parseAsString,
 };
 
 export const loadSearchParams = createSearchParamsCache(searchParamsSchema);

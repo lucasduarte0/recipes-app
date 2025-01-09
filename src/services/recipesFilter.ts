@@ -1,7 +1,8 @@
 'use server';
 
-import { Prisma, RecipeDifficulty } from '@prisma/client';
+import { RecipeDifficulty } from '@prisma/client';
 import { parseArray, parseNumber } from '@/lib/utils';
+import { RecipeWhereInput } from '@/lib/types';
 
 export type RecipeFilterParams = {
   prepTime?: number | null;
@@ -18,7 +19,7 @@ export type RecipeFilterParams = {
 // Cache the search results for 1 minute
 // Builds Prisma where clause from filter parameters
 export const buildRecipeWhereClause = async (filters: RecipeFilterParams) => {
-  const where: Prisma.RecipeWhereInput = {};
+  const where: RecipeWhereInput = {};
 
   // Numeric comparisons
   const numericFilters = {

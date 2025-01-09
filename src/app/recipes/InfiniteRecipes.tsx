@@ -1,16 +1,12 @@
 'use client';
 
 import { useRecipes } from '@/hooks/useRecipes';
-import { RecipeWithUser } from '@/lib/types';
+import { RecipeWhereInput, RecipeWithUser } from '@/lib/types';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LikeButton } from '@/components/LikeButton';
+// import { LikeButton } from '@/components/LikeButton';
 import { Loader2 } from 'lucide-react';
 import LoadMoreIndicator from '@/components/recipe-card/LoadMoreIndicator';
-import { parseAsString, useQueryState, useQueryStates } from 'nuqs';
-import { Prisma } from '@prisma/client';
-import { RecipeFilterParams } from '@/services/recipesFilter';
-import { useEffect } from 'react';
 
 interface InfiniteRecipesProps {
   initialData: {
@@ -20,7 +16,7 @@ interface InfiniteRecipesProps {
     hasMore: boolean;
   };
   searchTerm?: string;
-  where?: Prisma.RecipeWhereInput;
+  where?: RecipeWhereInput;
 }
 
 export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: InfiniteRecipesProps) {
@@ -30,14 +26,6 @@ export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: In
     itemsPerPage: initialData.pageSize,
     initialData,
   });
-
-  // const [{ cuisine, difficulty }, setFilter] = useQueryStates({ cuisine: parseAsString, difficulty: parseAsString });
-
-  // useEffect(() => {
-  //   if (cuisine || difficulty) {
-  //     setFilter({ cuisine, difficulty });
-  //   }
-  // }, [cuisine, difficulty, setFilter]);
 
   if (isLoading) {
     console.log('Loading...');
@@ -78,7 +66,7 @@ export function InfiniteRecipes({ initialData, searchTerm = '', where = {} }: In
                 </div>
 
                 <div className="flex items-center gap-2 py-1">
-                  <LikeButton recipeId={recipe.id} userId={recipe.user.id} />
+                  {/* <LikeButton recipeId={recipe.id} userId={recipe.user.id} /> */}
                 </div>
               </div>
             </RecipeCard>

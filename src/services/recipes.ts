@@ -2,10 +2,7 @@
 
 import { Cuisine, Prisma } from '@prisma/client';
 import prisma from '../lib/db';
-import {
-  DEFAULT_PAGE_SIZE,
-  DEFAULT_POPULAR_RECIPES_COUNT,
-} from '@/lib/constants';
+import { DEFAULT_PAGE_SIZE, DEFAULT_POPULAR_RECIPES_COUNT } from '@/lib/constants';
 
 const DEFAULT_RECIPE_SELECT: Prisma.RecipeSelect = {
   id: true,
@@ -47,6 +44,11 @@ export async function searchRecipes({
   where = {},
   page = 0, // Change the default page to 0
   pageSize = DEFAULT_PAGE_SIZE,
+}: {
+  searchTerm?: string;
+  where?: Prisma.RecipeWhereInput;
+  page?: number;
+  pageSize?: number;
 }) {
   // Make a console time start here
   const performanceStart = performance.now(); // Start time measurement
@@ -127,20 +129,13 @@ export async function getRecipeById(id: number) {
   return recipe;
 }
 
-export async function createRecipe(
-  userId: string,
-  data: Omit<Prisma.RecipeUncheckedCreateInput, 'userId'>
-) {
+export async function createRecipe(userId: string, data: Omit<Prisma.RecipeUncheckedCreateInput, 'userId'>) {
   return prisma.recipe.create({
     data: { ...data, userId },
   });
 }
 
-export async function updateRecipe(
-  id: number,
-  userId: string,
-  data: Prisma.RecipeUpdateInput
-) {
+export async function updateRecipe(id: number, userId: string, data: Prisma.RecipeUpdateInput) {
   await verifyRecipeOwnership(id, userId);
   return prisma.recipe.update({
     where: { id },
