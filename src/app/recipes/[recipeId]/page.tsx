@@ -8,6 +8,9 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { getRecipeById } from '@/services/recipes';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BackButton } from '@/components/BackButton';
+
 type Props = {
   params: Promise<{ recipeId: string }>;
 };
@@ -23,19 +26,13 @@ export default async function Page({ params }: Props) {
   }
 
   const isOwner = user?.id === recipe.user.id;
-  const totalTime =
-    (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
+  const totalTime = (recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0);
 
   return (
     <div className="relative max-w-4xl mx-auto min-h-screen pb-20">
       <div className="relative w-full h-[45vh] sm:h-[450px]">
-        <Link
-          href="/"
-          className="fixed z-10 top-4 left-4 p-2 bg-white/70 hover:bg-white/90 rounded-full transition-colors"
-          aria-label="Go back">
-          <ChevronLeft className="w-6 h-6" />
-        </Link>
         <div className="fixed sm:absolute top-0 left-0 right-0 w-full h-[50vh] sm:h-[450px]">
+          <BackButton />
           <Image
             className="w-full h-full object-cover"
             src={recipe.image}
@@ -57,44 +54,54 @@ export default async function Page({ params }: Props) {
 
       <div className="relative z-10">
         <div className="bg-white rounded-t-[32px] p-6 sm:p-8">
-          {/* Badges */}
-          <div className="w-full flex items-center justify-center mb-6">
-            <div className="w-full flex justify-evenly items-center gap-6">
+          {/* Headers */}
+          <div className="gap-3 flex flex-col pb-8">
+            {/* Badges */}
+            <div className="flex justify-evenly items-center gap-6">
               <div className="flex flex-col items-center gap-1">
-                <ChefHat className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">
-                  {recipe.difficulty || 'Easy'}
-                </span>
+                <ChefHat className="h-6 text-primary" strokeWidth={1.5} />
+                <span className="text-sm">{recipe.difficulty || 'Easy'}</span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Clock className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">{totalTime} min</span>
+                <Clock className="h-6 text-primary" strokeWidth={1.5} />
+                <span className="text-sm">{totalTime} min</span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Star className="w-6 h-6 text-primary" strokeWidth={1.5} />
-                <span className="text-sm font-[400]">
-                  {recipe.rating || '4.5'}
-                </span>
+                <Star className="h-6 text-primary" strokeWidth={1.5} />
+                <span className="text-sm">{recipe.rating || '4.5'}</span>
+              </div>
+            </div>
+
+            {/* title and tags */}
+            <div>
+              <h1 className="text-4xl font-playful font-bold mb-4">{recipe.name}</h1>
+              {recipe.tags && recipe.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {recipe.tags.map((tag: string) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* User Info */}
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={recipe.user.imageUrl} alt={recipe.user.username} />
+                <AvatarFallback>{recipe.user.username.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium leading-none">{recipe.user.username}</span>
+                <span className="text-xs text-muted-foreground">Recipe Creator</span>
               </div>
             </div>
           </div>
 
-          <h1 className="text-4xl font-playful font-bold mb-4">
-            {recipe.name}
-          </h1>
-          {recipe.tags && recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-8">
-              {recipe.tags.map((tag: string) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-
           <div className="space-y-5">
             {/* Ingredients Qty */}
-            <div className="flex items-center justify-around gap-4">
+            {/* <div className="flex items-center justify-around gap-4">
               <div>
                 <h2 className="text-2xl font-semibold">Ingredients</h2>
                 <span className="text-base text-muted-foreground">
@@ -108,7 +115,7 @@ export default async function Page({ params }: Props) {
                   defaultValue={recipe.servings || 4}
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Ingredients List */}
             {recipe.ingredients && recipe.ingredients.length > 0 && (
@@ -133,16 +140,14 @@ export default async function Page({ params }: Props) {
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Instructions</h2>
                 <ol className="space-y-4">
-                  {recipe.instructions.map(
-                    (instruction: string, index: number) => (
-                      <li key={index} className="flex gap-4">
-                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-medium">
-                          {index + 1}
-                        </span>
-                        <p className="">{instruction}</p>
-                      </li>
-                    )
-                  )}
+                  {recipe.instructions.map((instruction: string, index: number) => (
+                    <li key={index} className="flex gap-4">
+                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-medium">
+                        {index + 1}
+                      </span>
+                      <p className="">{instruction}</p>
+                    </li>
+                  ))}
                 </ol>
               </div>
             )}
@@ -151,9 +156,7 @@ export default async function Page({ params }: Props) {
 
             {/* Additional Details */}
             <div className="mt-8">
-              <h2 className="text-2xl font-semibold mb-4">
-                Additional Details
-              </h2>
+              <h2 className="text-2xl font-semibold mb-4">Additional Details</h2>
               <div className="grid grid-cols-2 gap-4">
                 {recipe.cuisine && (
                   <div>
@@ -164,17 +167,13 @@ export default async function Page({ params }: Props) {
                 {recipe.caloriesPerServing && (
                   <div>
                     <span className="font-medium">Calories per serving:</span>
-                    <p className="text-muted-foreground">
-                      {recipe.caloriesPerServing}
-                    </p>
+                    <p className="text-muted-foreground">{recipe.caloriesPerServing}</p>
                   </div>
                 )}
                 {recipe.reviewCount && (
                   <div>
                     <span className="font-medium">Reviews:</span>
-                    <p className="text-muted-foreground">
-                      {recipe.reviewCount}
-                    </p>
+                    <p className="text-muted-foreground">{recipe.reviewCount}</p>
                   </div>
                 )}
                 {recipe.mealType && recipe.mealType.length > 0 && (
@@ -203,9 +202,7 @@ export default async function Page({ params }: Props) {
                 )}
                 <div className="col-span-2">
                   <span className="font-medium">Created by:</span>
-                  <p className="text-muted-foreground">
-                    {recipe.user.username}
-                  </p>
+                  <p className="text-muted-foreground">{recipe.user.username}</p>
                 </div>
               </div>
             </div>
