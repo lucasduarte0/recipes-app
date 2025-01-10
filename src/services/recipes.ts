@@ -24,6 +24,11 @@ const DEFAULT_RECIPE_SELECT: Prisma.RecipeSelect = {
       imageUrl: true,
     },
   },
+  _count: {
+    select: {
+      recipeLikes: true,
+    },
+  },
 };
 
 async function verifyRecipeOwnership(id: number, userId: string) {
@@ -83,11 +88,6 @@ export async function searchRecipes({
     where: finalWhere,
     select: {
       ...DEFAULT_RECIPE_SELECT,
-      _count: {
-        select: {
-          recipeLikes: true,
-        },
-      },
       recipeLikes: userId
         ? {
             where: { userId },
@@ -159,23 +159,34 @@ export async function updateRecipe(id: number, userId: string, data: Prisma.Reci
   });
 }
 
-export async function getPopularRecipes(limit = DEFAULT_POPULAR_RECIPES_COUNT) {
-  return prisma.recipe.findMany({
+export async function getPopularRecipes(limit = DEFAULT_POPULAR_RECIPES_COUNT, userId = undefined) {
+  const recipes = await prisma.recipe.findMany({
     where: {
       AND: [{ rating: { gte: 4 } }, { reviewCount: { not: null } }],
     },
     orderBy: [{ reviewCount: 'desc' }, { rating: 'desc' }],
     select: {
       ...DEFAULT_RECIPE_SELECT,
-      recipeLikes: {
-        select: { userId: true },
-      },
+      recipeLikes: userId
+        ? {
+            where: { userId },
+            select: { userId: true },
+          }
+        : undefined,
       _count: {
         select: { recipeLikes: true },
       },
     },
     take: limit,
   });
+
+  // Add if userHasLiked to each recipe
+  const transformedRecipes = recipes.map((recipe) => ({
+    ...recipe,
+    hasUserLiked: recipe.recipeLikes?.length > 0,
+  }));
+
+  return transformedRecipes;
 }
 
 export async function getCuisines(): Promise<Cuisine[]> {

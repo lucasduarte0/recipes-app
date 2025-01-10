@@ -83,18 +83,14 @@ export default async function ProfilePage() {
         {user.recipes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="text-4xl mb-4">📸</div>
-            <p className="text-muted-foreground text-center">
-              Your recipes will appear here after posting.
-            </p>
+            <p className="text-muted-foreground text-center">Your recipes will appear here after posting.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {user.recipes.map((recipe) => (
               <div key={recipe.id} className="relative">
                 <RecipeCard recipe={recipe} imageAspectRatio="square">
-                  <h2 className="text-base font-playful font-semibold">
-                    {recipe.name}
-                  </h2>
+                  <h2 className="text-base font-playful font-semibold">{recipe.name}</h2>
                 </RecipeCard>
                 <Button
                   variant="secondary"
