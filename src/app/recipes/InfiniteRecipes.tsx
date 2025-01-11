@@ -5,9 +5,10 @@ import { RecipeWhereInput, RecipeWithUserAndLikeFlag } from '@/lib/types';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // import { LikeButton } from '@/components/LikeButton';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User as UserIcon } from 'lucide-react';
 import LoadMoreIndicator from '@/components/recipe-card/LoadMoreIndicator';
 import { LikeButton } from '@/components/LikeButton';
+import Link from 'next/link';
 interface InfiniteRecipesProps {
   initialData: {
     recipes: RecipeWithUserAndLikeFlag[];
@@ -58,13 +59,17 @@ export function InfiniteRecipes({ initialData, searchTerm = '', where = {}, user
               <div className="flex justify-between items-start w-full">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-base font-playful font-semibold">{recipe.name}</h2>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarImage src={recipe.user.imageUrl} />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-muted-foreground">{recipe.user.username}</span>
-                  </div>
+                  <Link href={`/profile/${recipe.user.id}`}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6">
+                        {recipe.user.imageUrl && <AvatarImage src={recipe.user.imageUrl} />}
+                        <AvatarFallback>
+                          <UserIcon />
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">{recipe.user.username}</span>
+                    </div>
+                  </Link>
                 </div>
 
                 <div className="flex items-center gap-2 py-1">

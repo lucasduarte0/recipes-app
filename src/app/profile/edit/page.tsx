@@ -3,6 +3,7 @@ import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { EditProfileForm } from './EditProfileForm';
+import { isUsernameAvailable, updateUser } from '@/services/users';
 
 async function updateProfile(formData: FormData) {
   'use server';
@@ -14,52 +15,32 @@ async function updateProfile(formData: FormData) {
 
   const firstName = formData.get('firstName') as string;
   const username = formData.get('username') as string;
-  const email = formData.get('email') as string;
+  // const email = formData.get('email') as string;
   const bio = formData.get('bio') as string;
   const gender = formData.get('gender') as string;
   const birthday = formData.get('birthday') as string;
 
   // Basic validation
-  if (!firstName || !username || !email) {
+  if (!firstName || !username) {
     throw new Error('Required fields are missing');
-  }
-
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    throw new Error('Invalid email format');
   }
 
   try {
     // Check if username or email already exists (excluding current user)
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ username }, { email }],
-        NOT: {
-          id: userId,
-        },
-      },
-    });
+    const existingUser = await isUsernameAvailable(username);
 
     if (existingUser) {
-      if (existingUser.username === username) {
+      if (existingUser.id === username) {
         throw new Error('Username already taken');
-      }
-      if (existingUser.email === email) {
-        throw new Error('Email already in use');
       }
     }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        firstName,
-        username,
-        email,
-        bio: bio || null,
-        gender: gender || null,
-        birthday: birthday ? new Date(birthday) : null,
-      },
+    await updateUser(userId, {
+      firstName,
+      username,
+      bio: bio || null,
+      gender: gender || null,
+      birthday: birthday ? new Date(birthday) : null,
     });
   } catch (error) {
     if (error instanceof Error) {

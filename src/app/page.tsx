@@ -57,10 +57,10 @@ export default async function HomePage() {
                     <div className="flex flex-col gap-1">
                       <h2 className="text-base font-playful font-semibold">{recipe.name}</h2>
                       {/* <div className="flex items-center gap-2">
-                        <Avatar className="w-5 h-5">
-                          <AvatarImage src={recipe.user?.imageUrl} />
-                          <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
+                            {user.imageUrl && <AvatarImage src={user.imageUrl} />}
+                          <AvatarFallback>
+                            <User />
+                          </AvatarFallback>
                         <span className="text-xs text-muted-foreground">{recipe.user.username}</span>
                       </div> */}
                     </div>

@@ -1,12 +1,85 @@
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { getUserWithRecipesAndCounts } from '@/services/users';
+import { getUserWithRecipesAndCounts, updateUser, isUsernameAvailable } from '@/services/users';
 import { auth } from '@clerk/nextjs/server';
-import { Edit2, Pencil, Plus, User } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { EditBioDialog } from './_components/EditBioDialog';
+import { EditProfileDialog } from './_components/EditProfileDialog';
+import { EditAvatarDialog } from './_components/EditAvatarDialog';
+import { revalidatePath } from 'next/cache';
+import { uploadProfileImage } from '@/services/storage';
+
+async function updateProfileImage(formData: FormData) {
+  'use server';
+
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error('Not authenticated');
+  }
+
+  const file = formData.get('image') as File;
+  if (!file) {
+    throw new Error('No file provided');
+  }
+
+  try {
+    const imageUrl = await uploadProfileImage(file, userId);
+    await updateUser(userId, { imageUrl });
+    revalidatePath('/profile');
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to update profile image: ${error.message}`);
+    }
+    throw new Error('Failed to update profile image');
+  }
+}
+
+async function updateProfile(formData: FormData) {
+  'use server';
+
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error('Not authenticated');
+  }
+
+  const firstName = formData.get('firstName') as string;
+  const lastName = formData.get('lastName') as string;
+  const username = formData.get('username') as string;
+  const bio = formData.get('bio') as string | null;
+
+  // Basic validation
+  if (!firstName || !lastName || !username) {
+    throw new Error('Required fields are missing');
+  }
+
+  try {
+    // Check if username already exists (excluding current user)
+    const existingUser = await isUsernameAvailable(username);
+
+    if (existingUser) {
+      if (existingUser.id === username) {
+        throw new Error('Username already taken');
+      }
+    }
+
+    await updateUser(userId, {
+      firstName,
+      lastName,
+      username,
+      bio,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to update profile: ${error.message}`);
+    }
+    throw new Error('Failed to update profile');
+  }
+
+  revalidatePath('/profile');
+}
 
 export default async function ProfilePage() {
   const { userId } = await auth();
@@ -25,40 +98,26 @@ export default async function ProfilePage() {
     <main className="container max-w-lg mx-auto px-4 pb-20">
       {/* Profile Header */}
       <div className="flex flex-col items-center mt-8">
-        <div className="relative">
-          <Avatar className="w-24 h-24">
-            <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-2xl">
-              {user.imageUrl && <AvatarImage src={user.imageUrl} />}
-              <AvatarFallback>
-                <User />
-              </AvatarFallback>
-            </div>
-          </Avatar>
-          {!user.imageUrl && (
-            <button className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md">
-              <Plus size={16} />
-            </button>
-          )}
-        </div>
+        <EditAvatarDialog user={user} updateProfileImage={updateProfileImage} />
 
         <h1 className="text-2xl font-bold mt-4">{`${user.firstName} ${user.lastName}`}</h1>
         <p className="text-gray-500">@{user.username}</p>
 
-        <Button variant="outline" className="mt-4 rounded-full px-8" asChild>
-          <Link href="/profile/edit">Edit Profile</Link>
-        </Button>
+        <EditProfileDialog user={user} updateProfile={updateProfile} />
 
-        <p className="text-sm mt-4">
-          {user.bio || (
-            <span className="text-primary flex items-center">
-              <Edit2 size={16} className="mr-1.5 inline-block" />
-              Add a bio to share your cooking journey
-            </span>
-          )}
-        </p>
+        {/* Bio */}
+        {user.bio ? (
+          <div className="">
+            <p className="mt-4 text-gray-500">{user.bio}</p>
+          </div>
+        ) : (
+          <div className="pt-2">
+            <EditBioDialog user={user} />
+          </div>
+        )}
 
         {/* Stats */}
-        <div className="flex justify-center gap-8 mt-6 w-full">
+        <div className="flex justify-center gap-8 mt-4 w-full">
           <div className="text-center">
             <p className="font-bold">{user.recipes.length}</p>
             <p className="text-gray-500 text-sm">Recipes</p>

@@ -1,3 +1,4 @@
+'use server';
 import prisma from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
@@ -98,6 +99,9 @@ export async function getUserWithRecipesAndCounts(userId: string) {
   return user;
 }
 
+// Get type of getUserWithRecipesAndCounts using prisma
+export type UserWithRecipesAndCounts = Awaited<ReturnType<typeof getUserWithRecipesAndCounts>>;
+
 /**
  * Get user by username
  */
@@ -133,12 +137,7 @@ export async function updateUser(userId: string, userData: UpdateUserData) {
     });
     return user;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        throw new Error('Username already exists');
-      }
-    }
-    throw new Error('Failed to update user');
+    throw error;
   }
 }
 
@@ -279,8 +278,8 @@ export async function getUserStats(userId: string) {
 export async function isUsernameAvailable(username: string) {
   const user = await prisma.user.findUnique({
     where: { username },
-    select: { id: true },
+    select: { id: true, username: true },
   });
 
-  return { available: !user };
+  return { available: !user, ...user };
 }
