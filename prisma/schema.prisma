@@ -12,10 +12,10 @@ datasource db {
 
 model User {
   id          String       @id @default(uuid())
-  firstName   String       @map("first_name")
-  lastName    String       @map("last_name")
+  firstName   String?       @map("first_name")
+  lastName    String?       @map("last_name")
   email       String       @unique
-  imageUrl    String       @map("image_url")
+  imageUrl    String?       @map("image_url")
   username    String       @unique
   bio         String?
   gender      String?
@@ -24,8 +24,24 @@ model User {
   updatedAt   DateTime     @updatedAt @map("updated_at")
   recipes     Recipe[]
   recipeLikes RecipeLike[]
+  followers   Follow[]     @relation("followers")
+  following   Follow[]     @relation("following")
 
   @@map("users")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
 }
 
 model Recipe {

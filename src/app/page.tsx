@@ -4,18 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Clock } from 'lucide-react';
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { ScrollableCategoriesGrid } from '@/components/ScrollableCategoriesGrid';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // import { LikeButton } from '@/components/LikeButton';
 // import { currentUser } from '@clerk/nextjs/server';
 import { getCuisines } from '@/services/cuisines';
 import { getPopularRecipes } from '@/services/recipes';
 import { LikeButton } from '@/components/LikeButton';
+import { getCurrentUser } from '@/services/auth';
 
 export default async function HomePage() {
-  // const user = await currentUser();
+  const user = await getCurrentUser();
   const cuisines = await getCuisines();
-
   const popularRecipes = await getPopularRecipes(6);
+
+  if (user) {
+    console.log('User: ', user.id); // Log the user object to the console
+  }
 
   return (
     <div className="min-h-screen font-[family-name:var(--font-geist-sans)]">
@@ -47,7 +50,7 @@ export default async function HomePage() {
         <section className="w-full">
           <h2 className="text-lg font-semibold mb-4">Popular Recipes</h2>
           <div className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
-            {popularRecipes.map((recipe, index) => (
+            {popularRecipes.map((recipe) => (
               <div key={recipe.id}>
                 <RecipeCard className="w-full" recipe={recipe} imageClassName="w-full" imageAspectRatio="video">
                   <div className="flex justify-between items-start w-full">

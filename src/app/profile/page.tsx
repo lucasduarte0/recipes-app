@@ -2,9 +2,9 @@ import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import prisma from '@/lib/db';
+import { getUserWithRecipesAndCounts } from '@/services/users';
 import { auth } from '@clerk/nextjs/server';
-import { Edit2, Pencil, Plus } from 'lucide-react';
+import { Edit2, Pencil, Plus, User } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -15,10 +15,7 @@ export default async function ProfilePage() {
     redirect('/');
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { recipes: true },
-  });
+  const user = await getUserWithRecipesAndCounts(userId);
 
   if (!user) {
     return <div>User not found</div>;
@@ -31,8 +28,10 @@ export default async function ProfilePage() {
         <div className="relative">
           <Avatar className="w-24 h-24">
             <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center text-2xl">
-              <AvatarImage src={user.imageUrl} />
-              <AvatarFallback>CN</AvatarFallback>
+              {user.imageUrl && <AvatarImage src={user.imageUrl} />}
+              <AvatarFallback>
+                <User />
+              </AvatarFallback>
             </div>
           </Avatar>
           {!user.imageUrl && (
@@ -65,11 +64,11 @@ export default async function ProfilePage() {
             <p className="text-gray-500 text-sm">Recipes</p>
           </div>
           <div className="text-center">
-            <p className="font-bold">0</p>
+            <p className="font-bold">{user._count.following}</p>
             <p className="text-gray-500 text-sm">Following</p>
           </div>
           <div className="text-center">
-            <p className="font-bold">0</p>
+            <p className="font-bold">{user._count.followers}</p>
             <p className="text-gray-500 text-sm">Followers</p>
           </div>
         </div>
