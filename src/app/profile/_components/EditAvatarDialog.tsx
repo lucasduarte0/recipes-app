@@ -52,18 +52,18 @@ export function EditAvatarDialog({ user, updateProfileImage }: EditAvatarDialogP
     }
   };
 
-  // The `useUser()` hook will be used to ensure that Clerk has loaded data about the logged in user
-  const { user: clerkUser } = useUser();
+  // // The `useUser()` hook will be used to ensure that Clerk has loaded data about the logged in user
+  // const { user: clerkUser } = useUser();
 
-  // The `useSession()` hook will be used to get the Clerk `session` object
-  const { session } = useSession();
+  // // The `useSession()` hook will be used to get the Clerk `session` object
+  // const { session } = useSession();
 
-  const supabase = createClerkSupabaseClient(session)
+  // const supabase = createClerkSupabaseClient(session)
 
-  const handleCheckSession = async () => {
-    console.log(session, clerkUser)
-    await checkSession();
-  };
+  // const handleCheckSession = async () => {
+  //   console.log(session, clerkUser)
+  //   await checkSession();
+  // };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -110,9 +110,9 @@ export function EditAvatarDialog({ user, updateProfileImage }: EditAvatarDialogP
             Choose Image
           </Button>
 
-          <Button onClick={handleCheckSession} className="w-full">
+          {/* <Button onClick={handleCheckSession} className="w-full">
             Check Session
-          </Button>
+          </Button> */}
         </div>
       </DialogContent>
     </Dialog>
