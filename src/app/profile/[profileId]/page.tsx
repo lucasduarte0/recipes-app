@@ -9,6 +9,10 @@ import { redirect } from 'next/navigation';
 import { followUser, unfollowUser, isFollowing } from '@/services/followers';
 import { revalidatePath } from 'next/cache';
 
+interface UserProfilePageProps {
+  params: Promise<{ profileId: string }>;
+}
+
 type FollowResponse = {
   success: boolean;
   data?: boolean;
@@ -27,11 +31,8 @@ async function toggleFollow(followerId: string, followingId: string, currentlyFo
   revalidatePath(`/profile/${followingId}`);
 }
 
-export default async function UserProfilePage({
-  params,
-}: {
-  params: { userId: string };
-}) {
+export default async function UserProfilePage({ params }: UserProfilePageProps) {
+  const { profileId } = await params;
   const { userId: currentUserId } = await auth();
 
   if (!currentUserId) {
@@ -39,13 +40,13 @@ export default async function UserProfilePage({
   }
 
   // If trying to view own profile, redirect to /profile
-  if (params.userId === currentUserId) {
+  if (profileId === currentUserId) {
     redirect('/profile');
   }
 
   const [user, followStatus] = await Promise.all([
-    getUserWithRecipesAndCounts(params.userId),
-    isFollowing({ followerId: currentUserId, followingId: params.userId }) as Promise<FollowResponse>,
+    getUserWithRecipesAndCounts(profileId),
+    isFollowing({ followerId: currentUserId, followingId: profileId }) as Promise<FollowResponse>,
   ]);
 
   if (!user) {
@@ -74,19 +75,13 @@ export default async function UserProfilePage({
         <p className="text-gray-500">@{user.username}</p>
 
         <form action={toggleFollow.bind(null, currentUserId, user.id, isUserFollowing)} className="mt-4">
-          <Button 
-            type="submit"
-            variant={isUserFollowing ? "outline" : "default"}
-            className="w-32"
-          >
+          <Button type="submit" variant={isUserFollowing ? 'outline' : 'default'} className="w-32">
             {isUserFollowing ? 'Unfollow' : 'Follow'}
           </Button>
         </form>
 
         {/* Bio */}
-        {user.bio && (
-          <p className="mt-4 text-gray-500">{user.bio}</p>
-        )}
+        {user.bio && <p className="mt-4 text-gray-500">{user.bio}</p>}
 
         {/* Stats */}
         <div className="flex justify-center gap-8 mt-6 w-full">
