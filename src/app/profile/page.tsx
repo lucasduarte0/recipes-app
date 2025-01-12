@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { RecipeCard } from '@/components/recipe-card/RecipeCard';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -11,6 +13,7 @@ import { EditProfileDialog } from './_components/EditProfileDialog';
 import { EditAvatarDialog } from './_components/EditAvatarDialog';
 import { revalidatePath } from 'next/cache';
 import { uploadProfileImage } from '@/services/storage';
+import { getCurrentUser } from '@/services/auth';
 
 async function updateProfileImage(formData: FormData) {
   'use server';
@@ -82,13 +85,13 @@ async function updateProfile(formData: FormData) {
 }
 
 export default async function ProfilePage() {
-  const { userId } = await auth();
+  const clerkUser = await getCurrentUser();
 
-  if (!userId) {
+  if (!clerkUser) {
     redirect('/');
   }
 
-  const user = await getUserWithRecipesAndCounts(userId);
+  const user = await getUserWithRecipesAndCounts(clerkUser.id);
 
   if (!user) {
     return <div>User not found</div>;
