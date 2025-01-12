@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Star, ChefHat, Edit } from 'lucide-react';
+import { Clock, Star, ChefHat, Edit, User as UserIcon } from 'lucide-react';
 import { currentUser } from '@clerk/nextjs/server';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
@@ -88,8 +88,10 @@ export default async function Page({ params }: Props) {
             {/* User Info */}
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={recipe.user.imageUrl} alt={recipe.user.username} />
-                <AvatarFallback>{recipe.user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                {recipe.user.imageUrl && <AvatarImage src={recipe.user.imageUrl} />}
+                <AvatarFallback>
+                  <UserIcon />
+                </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <span className="text-sm font-medium leading-none">{recipe.user.username}</span>
