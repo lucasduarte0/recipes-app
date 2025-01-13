@@ -13,9 +13,6 @@ import {
 import { User, Edit2, Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
-import { checkSession } from '@/services/storage';
-import { createClerkSupabaseClient } from '@/lib/supabase/client';
-import { useSession, useUser } from '@clerk/nextjs';
 
 interface EditAvatarDialogProps {
   user: {
@@ -51,19 +48,6 @@ export function EditAvatarDialog({ user, updateProfileImage }: EditAvatarDialogP
       });
     }
   };
-
-  // // The `useUser()` hook will be used to ensure that Clerk has loaded data about the logged in user
-  // const { user: clerkUser } = useUser();
-
-  // // The `useSession()` hook will be used to get the Clerk `session` object
-  // const { session } = useSession();
-
-  // const supabase = createClerkSupabaseClient(session)
-
-  // const handleCheckSession = async () => {
-  //   console.log(session, clerkUser)
-  //   await checkSession();
-  // };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -109,10 +93,6 @@ export function EditAvatarDialog({ user, updateProfileImage }: EditAvatarDialogP
           <Button onClick={() => fileInputRef.current?.click()} className="w-full">
             Choose Image
           </Button>
-
-          {/* <Button onClick={handleCheckSession} className="w-full">
-            Check Session
-          </Button> */}
         </div>
       </DialogContent>
     </Dialog>

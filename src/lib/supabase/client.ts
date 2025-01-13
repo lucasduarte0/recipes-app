@@ -1,20 +1,26 @@
+'use client';
 import { createClient } from '@supabase/supabase-js';
-// Function to create a Supabase client with Clerk authentication
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createClerkSupabaseClient(session: any) {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      global: {
-        fetch: async (url, options = {}) => {
-          const clerkToken = await session?.getToken({
-            template: 'enter-your-jwt-clerk-template-name',
-          });
-          const headers = new Headers(options?.headers);
-          headers.set('Authorization', `Bearer ${clerkToken}`);
-          return fetch(url, { ...options, headers });
-        },
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: {
+      // Get the custom Supabase token from Clerk
+      fetch: async (url, options = {}) => {
+        const clerkToken = await session?.getToken({
+          template: 'supabase',
+        });
+
+        // Insert the Clerk Supabase token into the headers
+        const headers = new Headers(options?.headers);
+        headers.set('Authorization', `Bearer ${clerkToken}`);
+
+        // Now call the default fetch
+        return fetch(url, {
+          ...options,
+          headers,
+        });
       },
-    }
-  );
+    },
+  });
 }

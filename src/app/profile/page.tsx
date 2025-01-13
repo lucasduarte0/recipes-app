@@ -12,7 +12,6 @@ import { EditBioDialog } from './_components/EditBioDialog';
 import { EditProfileDialog } from './_components/EditProfileDialog';
 import { EditAvatarDialog } from './_components/EditAvatarDialog';
 import { revalidatePath } from 'next/cache';
-import { uploadProfileImage } from '@/services/storage';
 import { getCurrentUser } from '@/services/auth';
 
 async function updateProfileImage(formData: FormData) {
@@ -29,7 +28,24 @@ async function updateProfileImage(formData: FormData) {
   }
 
   try {
-    const imageUrl = await uploadProfileImage(file, userId);
+    // Create a new FormData instance and append the file
+    const imageFormData = new FormData();
+    imageFormData.append('file', file);
+
+    // Make a request to our bucket API route
+    const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/bucket`, {
+      method: 'POST',
+      body: imageFormData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to upload image');
+    }
+
+    const { url: imageUrl } = await response.json();
+
+    // Update user profile with the new image URL
     await updateUser(userId, { imageUrl });
     revalidatePath('/profile');
   } catch (error) {
