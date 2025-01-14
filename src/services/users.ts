@@ -1,7 +1,6 @@
 'use server';
 import prisma from '@/lib/db';
 import { Prisma } from '@prisma/client';
-import { DefaultArgs } from '@prisma/client/runtime/library';
 
 export type UserWithFollow = Prisma.UserGetPayload<{
   include: {
@@ -141,6 +140,38 @@ export async function updateUser(userId: string, userData: UpdateUserData) {
   }
 }
 
+// ... existing code ...
+
+/**
+ * Upsert user (create if doesn't exist, update if exists)
+ */
+export async function upsertUser({
+  where,
+  create,
+  update,
+}: {
+  where: Prisma.UserWhereUniqueInput;
+  create: Prisma.UserCreateInput;
+  update: Prisma.UserUpdateInput;
+}) {
+  try {
+    const user = await prisma.user.upsert({
+      where,
+      create,
+      update,
+    });
+
+    return user;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw new Error('Username or email already exists');
+      }
+    }
+    throw new Error('Failed to upsert user');
+  }
+}
+
 /**
  * Delete user
  */
@@ -149,7 +180,7 @@ export async function deleteUser(userId: string) {
     await prisma.user.delete({
       where: { id: userId },
     });
-  } catch (error) {
+  } catch {
     throw new Error('Failed to delete user');
   }
 }

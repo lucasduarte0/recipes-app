@@ -28,12 +28,12 @@ export const recipeFormSchema = z.object({
     .optional(),
   caloriesPerServing: z.number().min(0).optional(),
   tags: z.array(z.string()).default([]),
-  // image: z
-  //   .string()
-  //   .url({
-  //     message: 'Please enter a valid URL.',
-  //   })
-  //   .optional(),
+  image: z
+    .string()
+    .url({
+      message: 'Please enter a valid URL.',
+    })
+    .optional(),
   mealType: z
     .array(z.string())
     .min(1, {

@@ -1,26 +1,27 @@
 'use client';
 
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Input } from './input';
 import { FormControl, FormItem, FormLabel, FormMessage } from './form';
-import { uploadRecipeImage } from '@/services/storage';
+import { ImageIcon, Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/useToast';
 
 interface ImageUploadProps {
   value?: string;
   onChange: (value: string) => void;
   label?: string;
+  bucketName?: string;
 }
 
-export function ImageUpload({
-  value,
-  onChange,
-  label = 'Image',
-}: ImageUploadProps) {
+export function ImageUpload({ value, onChange, label = 'Image', bucketName = 'profiles' }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
 
-  // Extract filename from URL
-  const currentImageName = value ? value.split('/').pop() : null;
+  // Reset preview when value changes externally
+  useEffect(() => {
+    setPreview(value ?? null);
+  }, [value]);
 
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,66 +29,93 @@ export function ImageUpload({
 
     // Basic validation
     if (!file.type.startsWith('image/')) {
-      console.error('Please upload an image file');
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload an image file.',
+        variant: 'destructive',
+      });
       return;
     }
 
+    // Create preview immediately
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+
     try {
       setIsUploading(true);
-      const fileName = `${Date.now()}-${file.name}`;
-      const data = await uploadRecipeImage(file, fileName);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bucket', bucketName);
 
-      if (data?.path) {
-        const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/recipes/${data.path}`;
-        onChange(imageUrl);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      // Call onChange with the new image URL if upload was successful
+      if (result.url) {
+        onChange(result.url);
       }
     } catch (error) {
       console.error('Error uploading image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload image',
+        variant: 'destructive',
+      });
+
+      // Revert preview on error
+      setPreview(value ?? null);
     } finally {
       setIsUploading(false);
     }
   };
 
+  const imageUrl = preview || value;
+
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
-      <div className="space-y-4">
-        <div className="flex flex-col items-center space-y-4">
-          {value ? (
-            <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-              <Image
-                src={value}
-                alt="Image preview"
-                fill
-                className="object-cover"
-              />
-            </div>
+      <div className="space-y-4 sm:space-y-0 sm:flex sm:items-start sm:gap-4">
+        <div className="relative w-full sm:w-[200px] aspect-video sm:aspect-square rounded-lg overflow-hidden bg-muted">
+          {imageUrl ? (
+            <Image src={imageUrl} alt="Preview" fill className="object-cover transition-opacity duration-300" />
           ) : (
-            <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center">
-              <span className="text-muted-foreground">No image selected</span>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ImageIcon className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
-          <div className="space-y-2 w-full">
-            {currentImageName && (
-              <div className="text-sm text-muted-foreground mb-2">
-                Current image: {currentImageName}
-              </div>
-            )}
-            <FormControl>
+          {isUploading && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <Loader2 className="h-6 w-6 text-white" />
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2 flex-1">
+          <FormControl>
+            <div className="relative">
               <Input
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full"
+                className="w-full cursor-pointer file:cursor-pointer"
                 disabled={isUploading}
               />
-            </FormControl>
-            {isUploading && (
-              <div className="flex items-center justify-center text-sm text-muted-foreground">
-                Uploading...
-              </div>
-            )}
-          </div>
+              {isUploading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loader2 className="h-4 w-4" />
+                </div>
+              )}
+            </div>
+          </FormControl>
+          <p className="text-xs text-muted-foreground">Supported formats: JPG, PNG, GIF. Max file size: 5MB</p>
         </div>
       </div>
       <FormMessage />

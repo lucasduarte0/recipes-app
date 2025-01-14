@@ -1,17 +1,14 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { upsertUser } from '@/services/users';
+import { generateUniqueUsername } from '@/lib/utils';
 
 async function handler(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
-    throw new Error(
-      'Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env'
-    );
+    throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env');
   }
 
   // Get the headers
@@ -35,53 +32,52 @@ async function handler(req: Request) {
   const wh = new Webhook(WEBHOOK_SECRET);
 
   //TODO: Uncomment the following lines to verify the payload with the headers
-  // let evt: WebhookEvent;
+  let evt: WebhookEvent;
 
   // Verify the payload with the headers
-  // try {
-  //   evt = wh.verify(body, {
-  //     'svix-id': svix_id,
-  //     'svix-timestamp': svix_timestamp,
-  //     'svix-signature': svix_signature,
-  //   }) as WebhookEvent;
-  // } catch (err) {
-  //   console.error('Error verifying webhook:', err);
-  //   return new Response('Error occured', {
-  //     status: 400,
-  //   });
-  // }
+  try {
+    evt = wh.verify(body, {
+      'svix-id': svix_id,
+      'svix-timestamp': svix_timestamp,
+      'svix-signature': svix_signature,
+    }) as WebhookEvent;
+  } catch (err) {
+    console.error('Error verifying webhook:', err);
+    return new Response('Error occured', {
+      status: 400,
+    });
+  }
 
-  const evt = JSON.parse(body);
+  // const evt = JSON.parse(body);
 
   // Handle the webhook
   const eventType = evt.type;
 
   if (eventType === 'user.created' || eventType === 'user.updated') {
-    const { id, first_name, last_name, email_addresses, image_url, username } =
-      evt.data;
-
+    const { id, first_name, last_name, email_addresses, image_url, username } = evt.data;
     const primaryEmail = email_addresses?.[0]?.email_address;
 
-    if (!primaryEmail || !username) {
+    if (!primaryEmail) {
+      console.error('Missing required user email');
       return new Response('Missing required user data', { status: 400 });
     }
 
     try {
-      await prisma.user.upsert({
+      await upsertUser({
         where: { email: primaryEmail },
         create: {
           id,
           firstName: first_name ?? '',
           lastName: last_name ?? '',
           email: primaryEmail,
-          imageUrl: image_url ?? '',
-          username,
+          imageUrl: image_url,
+          username: username || (await generateUniqueUsername(primaryEmail)),
         },
         update: {
-          firstName: first_name ?? '',
-          lastName: last_name ?? '',
-          imageUrl: image_url ?? '',
-          username,
+          firstName: first_name ?? undefined,
+          lastName: last_name ?? undefined,
+          imageUrl: image_url ?? undefined,
+          username: username || undefined, // Only update username if provided by Clerk
         },
       });
 

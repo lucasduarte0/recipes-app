@@ -7,29 +7,17 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { RecipeFormValues, recipeFormSchema } from './schema';
 import { Button } from '@/components/ui/button';
-// import { ImageUpload } from '@/components/ui/image-upload';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
 import { ListField } from '@/components/ui/list-field';
 import { TagsInput } from '@/components/ui/tags-input';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { updateRecipe } from '@/services/recipes';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface EditRecipeFormProps {
   recipe: Recipe;
@@ -38,19 +26,9 @@ interface EditRecipeFormProps {
 }
 
 const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard'] as const;
-const MEAL_TYPES = [
-  'Breakfast',
-  'Lunch',
-  'Dinner',
-  'Snack',
-  'Dessert',
-] as const;
+const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'] as const;
 
-export function EditRecipeForm({
-  recipe,
-  userId,
-  cuisines,
-}: EditRecipeFormProps) {
+export function EditRecipeForm({ recipe, userId, cuisines }: EditRecipeFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,7 +46,7 @@ export function EditRecipeForm({
       caloriesPerServing: recipe.caloriesPerServing || 0,
       tags: recipe.tags,
       mealType: recipe.mealType,
-      // image: recipe.image,
+      image: recipe.image,
     },
   });
 
@@ -102,20 +80,9 @@ export function EditRecipeForm({
           )}
         />
 
-        <ListField
-          form={form}
-          name="ingredients"
-          label="Ingredients"
-          placeholder="Add ingredient"
-        />
+        <ListField form={form} name="ingredients" label="Ingredients" placeholder="Add ingredient" />
         <Separator />
-        <ListField
-          form={form}
-          name="instructions"
-          label="Instructions"
-          placeholder="Add instruction"
-          showNumbers
-        />
+        <ListField form={form} name="instructions" label="Instructions" placeholder="Add instruction" showNumbers />
 
         <Separator />
 
@@ -127,11 +94,7 @@ export function EditRecipeForm({
               <FormItem>
                 <FormLabel>Prep Time (minutes)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(+e.target.value)}
-                  />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -145,11 +108,7 @@ export function EditRecipeForm({
               <FormItem>
                 <FormLabel>Cook Time (minutes)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(+e.target.value)}
-                  />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -163,11 +122,7 @@ export function EditRecipeForm({
               <FormItem>
                 <FormLabel>Servings</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(+e.target.value)}
-                  />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,11 +136,7 @@ export function EditRecipeForm({
               <FormItem>
                 <FormLabel>Calories per Serving</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(+e.target.value)}
-                  />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -246,11 +197,7 @@ export function EditRecipeForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tags</FormLabel>
-              <TagsInput
-                value={field.value}
-                onValueChange={field.onChange}
-                placeholder="Tags"
-              />
+              <TagsInput value={field.value} onValueChange={field.onChange} placeholder="Tags" />
             </FormItem>
           )}
         />
@@ -273,24 +220,16 @@ export function EditRecipeForm({
           )}
         />
 
-        {/* <FormField
+        <FormField
           control={form.control}
           name="image"
           render={({ field }) => (
-            <ImageUpload
-              value={field.value}
-              onChange={field.onChange}
-              label="Recipe Image"
-            />
+            <ImageUpload value={field.value} onChange={field.onChange} label="Recipe Image" bucketName="recipes" />
           )}
-        /> */}
+        />
 
         <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isLoading}>
+          <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>
             Cancel
           </Button>
           <Button type="submit" disabled={isLoading}>
