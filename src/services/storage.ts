@@ -1,4 +1,4 @@
-import { PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { S3_CONFIG, type AllowedMimeType, type AllowedBucket, ObjectCannedACL } from '@/lib/s3-config';
 import { s3Client } from '@/lib/s3';
 import crypto from 'crypto';
@@ -82,7 +82,7 @@ export async function uploadImage(
 
     // Process filename
     const extension = contentType.split('/')[1];
-    const finalFileName = preserveFileName 
+    const finalFileName = preserveFileName
       ? sanitizeFileName(fileName, extension)
       : `${Date.now()}-${sanitizeFileName(fileName, extension)}`;
 

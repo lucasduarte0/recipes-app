@@ -27,13 +27,24 @@ async function updateProfileImage(formData: FormData) {
     throw new Error('No file provided');
   }
 
+  // Vercel URL
+  let vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+  if (!vercelUrl) {
+    vercelUrl = process.env.VERCEL_URL;
+  } // Fallback URL if NEXT_PUBLIC_VERCEL_URL is not set
+
+  // Add protocol if not present
+  if (vercelUrl && !vercelUrl.startsWith('http://') && !vercelUrl.startsWith('https://')) {
+    vercelUrl = `https://${vercelUrl}`;
+  }
+
   try {
     // Create a new FormData instance and append the file
     const imageFormData = new FormData();
     imageFormData.append('file', file);
 
     // Make a request to our bucket API route
-    const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/bucket`, {
+    const response = await fetch(`${vercelUrl}/api/bucket`, {
       method: 'POST',
       body: imageFormData,
     });
