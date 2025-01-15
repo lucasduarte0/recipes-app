@@ -1,3 +1,10 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Search Recipes',
+  description: 'Search through our collection of delicious recipes. Find recipes by name, ingredients, cuisine, or difficulty level.',
+};
+
 export default function SearchLayout({
   children,
 }: {
